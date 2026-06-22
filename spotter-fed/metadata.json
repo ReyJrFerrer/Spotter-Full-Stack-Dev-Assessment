@@ -1,0 +1,6 @@
+{
+  "name": "Truck Route & ELD Log Generator",
+  "description": "Calculates commercial driving routes and generates FMCSA Hours of Service (HOS) compliant automated daily ELD log sheets.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

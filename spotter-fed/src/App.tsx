@@ -1,122 +1,159 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+/**
+ * @license
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
-function App() {
-  const [count, setCount] = useState(0)
+import React, { useState, useEffect } from 'react';
+import { TripInputs, TripGenerationResult } from './types';
+import TripDetailsForm from './components/TripDetailsForm';
+import CalculatedMap from './components/CalculatedMap';
+import ItineraryPanel from './components/ItineraryPanel';
+import EldLogSheets from './components/EldLogSheets';
+import { Truck, ShieldCheck, Compass, Info, Cpu, AlertCircle } from 'lucide-react';
+
+export default function App() {
+  const [result, setResult] = useState<TripGenerationResult | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  // Trigger an initial automatic calculation on mount to show beautiful default data
+  useEffect(() => {
+    handleCalculate({
+      currentLocation: 'Los Angeles, CA',
+      pickupLocation: 'Las Vegas, NV',
+      dropoffLocation: 'Salt Lake City, UT',
+      currentCycleUsed: 15.5,
+      carrierName: 'Swift Logistical Transit Group',
+      tractorNumber: 'TRK-9801C',
+      trailerNumber: 'TRL-552A',
+      startTime: new Date().toISOString()
+    });
+  }, []);
+
+  const handleCalculate = async (inputs: TripInputs) => {
+    setIsLoading(true);
+    setErrorMsg(null);
+    try {
+      const response = await fetch('/api/generate-trip', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(inputs),
+      });
+
+      const resJson = await response.json();
+      if (resJson.success && resJson.data) {
+        setResult(resJson.data);
+      } else {
+        setErrorMsg(resJson.message || "Route calculation and log generation failed.");
+      }
+    } catch (err: any) {
+      console.error(err);
+      setErrorMsg("Network error trying to connect to dispatch server. Please ensure the dev server has compiled.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <div className="min-h-screen bg-[#F4F1ED] flex flex-col text-[#1A1A1A]">
+      
+      {/* 1. Header Navigation Banner: Editorial Layout */}
+      <header className="bg-[#F4F1ED] text-[#1A1A1A] border-b-2 border-[#1A1A1A] sticky top-0 z-50 py-5">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row md:items-baseline md:justify-between gap-4">
+          <div>
+            <h1 className="text-3xl md:text-4xl font-serif italic font-black tracking-tighter">
+              ELD.01 <span className="text-xs font-sans not-italic uppercase tracking-[0.25em] font-bold ml-2 md:ml-4 opacity-70">Route & Log Generator</span>
+            </h1>
+            <p className="text-[10px] uppercase tracking-widest font-bold opacity-60 mt-1">Automated Commercial Truck Routing & Certified Daily Log System</p>
+          </div>
 
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
+          <div className="flex flex-wrap items-center gap-4 text-[10px] uppercase tracking-widest font-extrabold text-[#1A1A1A]">
+            {result?.usingGemini ? (
+              <div className="flex items-center gap-1.5 bg-[#1A1A1A] text-white px-3 py-1.5 border border-[#1A1A1A] shadow-[2px_2px_0px_#1A1A1A]">
+                <Cpu className="h-3.5 w-3.5 shrink-0" />
+                <span>GEO ENGINE: GEMINI AI ACTIVE</span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-1.5 bg-[#E8E4DF] text-[#1A1A1A] px-3 py-1.5 border border-[#1A1A1A] shadow-[2px_2px_0px_#1A1A1A]">
+                <Info className="h-3.5 w-3.5 shrink-0" />
+                <span>GEO ENGINE: DETERMINISTIC CORE</span>
+              </div>
+            )}
+          </div>
         </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+      </header>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+      {/* 2. Main Content Board Wrap */}
+      <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+        
+        {/* Error Callout */}
+        {errorMsg && (
+          <div className="bg-red-50 border-2 border-red-900 rounded-none p-4 text-sm text-red-900 flex items-start gap-2.5 animate-fade-in shadow-[4px_4px_0px_#7f1d1d]">
+            <AlertCircle className="h-5 w-5 text-red-700 shrink-0 mt-0.5" />
+            <div>
+              <h4 className="font-bold mb-0.5 font-serif italic">Calculation Interrupted</h4>
+              <p className="text-xs leading-relaxed">{errorMsg}</p>
+            </div>
+          </div>
+        )}
+
+        {/* Top: Input form */}
+        <TripDetailsForm onSubmit={handleCalculate} isLoading={isLoading} />
+
+        {/* Bottom Results Bento Grid */}
+        {result ? (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+            
+            {/* Left/Middle Column (7-col lg width): Interactive map & Chrono Timetable */}
+            <div className="lg:col-span-7 space-y-8 flex flex-col h-full">
+              <div className="flex-1">
+                <CalculatedMap
+                  start={result.current}
+                  pickup={result.pickup}
+                  dropoff={result.dropoff}
+                  itinerary={result.itinerary}
+                  routeCoordinates={result.routeCoordinates}
+                />
+              </div>
+
+              <div>
+                <ItineraryPanel
+                  itinerary={result.itinerary}
+                  totalDistance={result.totalDistanceMiles}
+                  totalDurationHours={result.totalDurationHours}
+                />
+              </div>
+            </div>
+
+            {/* Right Column (5-col lg width): Daily Certified Log Sheets */}
+            <div className="lg:col-span-12 xl:col-span-5">
+              <EldLogSheets dailyLogs={result.dailyLogs} />
+            </div>
+
+          </div>
+        ) : (
+          <div className="text-center py-20 bg-white border border-[#1A1A1A] hover:shadow-none shadow-[4px_4px_0px_#1A1A1A] p-6">
+            <Compass className="h-10 w-10 text-slate-500 mx-auto mb-3 animate-spin" />
+            <h3 className="font-serif italic font-bold text-lg text-slate-800 mb-1">Starting dispatch simulator...</h3>
+            <p className="text-xs text-slate-500">Loading default truck configuration and routing database.</p>
+          </div>
+        )}
+
+      </main>
+
+      {/* 3. Footer branding */}
+      <footer className="bg-[#1A1A1A] text-white/60 text-xs py-8 border-t-2 border-[#1A1A1A] mt-12 bg-cover">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <p>© 2026 E-DOT Dispatch Terminal. Certified in compliance with § 395.22, ELD requirements.</p>
+          <div className="flex items-center gap-1.5 text-[11px] text-white/80">
+            <ShieldCheck className="h-4 w-4 text-[#FF6B00]" />
+            <span className="font-bold uppercase tracking-widest text-[9px]">Secure E-DOT Inspect Dataset Transfer</span>
+          </div>
+        </div>
+      </footer>
+
+    </div>
+  );
 }
-
-export default App
