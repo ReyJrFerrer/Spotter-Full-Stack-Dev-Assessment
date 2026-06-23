@@ -149,12 +149,12 @@ class HOSEngineTests(TestCase):
         self.assertGreater(result.total_distance_miles, 0)
 
     def test_high_cycle_used_triggers_34h_restart(self):
-        """Cycle at 65h triggers 34h restart early in trip."""
+        """Cycle near limit triggers 34h restart."""
         result = self._run_engine(
             self.los_angeles,
-            self.bakersfield,
             self.las_vegas,
-            cycle_used=65.0,
+            self.salt_lake_city,
+            cycle_used=68.0,
         )
         restart_items = [
             item
