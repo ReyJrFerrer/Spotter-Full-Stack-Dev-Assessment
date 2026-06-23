@@ -5,11 +5,12 @@
 
 import React, { useState, useEffect } from 'react';
 import { TripInputs, TripGenerationResult } from './types';
+import { mapBackendResponse, mergeUserMetadata } from './utils/apiTransform';
 import TripDetailsForm from './components/TripDetailsForm';
 import CalculatedMap from './components/CalculatedMap';
 import ItineraryPanel from './components/ItineraryPanel';
 import EldLogSheets from './components/EldLogSheets';
-import { Truck, ShieldCheck, Compass, Info, Cpu, AlertCircle } from 'lucide-react';
+import { ShieldCheck, Compass, AlertCircle } from 'lucide-react';
 
 export default function App() {
   const [result, setResult] = useState<TripGenerationResult | null>(null);
@@ -34,23 +35,37 @@ export default function App() {
     setIsLoading(true);
     setErrorMsg(null);
     try {
-      const response = await fetch('/api/generate-trip', {
+      const response = await fetch('/api/trips/generate/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(inputs),
+        body: JSON.stringify({
+          current_location: inputs.currentLocation,
+          pickup_location: inputs.pickupLocation,
+          dropoff_location: inputs.dropoffLocation,
+          current_cycle_used_hrs: inputs.currentCycleUsed,
+        }),
       });
 
-      const resJson = await response.json();
-      if (resJson.success && resJson.data) {
-        setResult(resJson.data);
-      } else {
-        setErrorMsg(resJson.message || "Route calculation and log generation failed.");
+      const data = await response.json();
+      if (!response.ok) {
+        const message =
+          data.error || (typeof data === 'object' ? JSON.stringify(data) : "Route calculation failed.");
+        throw new Error(message);
       }
+
+      const mapped = mapBackendResponse(data);
+      const merged = mergeUserMetadata(
+        mapped,
+        inputs.carrierName,
+        inputs.tractorNumber,
+        inputs.trailerNumber
+      );
+      setResult(merged);
     } catch (err: any) {
       console.error(err);
-      setErrorMsg("Network error trying to connect to dispatch server. Please ensure the dev server has compiled.");
+      setErrorMsg(err.message || "Network error trying to connect to dispatch server. Please ensure the backend server is running.");
     } finally {
       setIsLoading(false);
     }
@@ -69,18 +84,8 @@ export default function App() {
             <p className="text-[10px] uppercase tracking-widest font-bold opacity-60 mt-1">Automated Commercial Truck Routing & Certified Daily Log System</p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-4 text-[10px] uppercase tracking-widest font-extrabold text-[#1A1A1A]">
-            {result?.usingGemini ? (
-              <div className="flex items-center gap-1.5 bg-[#1A1A1A] text-white px-3 py-1.5 border border-[#1A1A1A] shadow-[2px_2px_0px_#1A1A1A]">
-                <Cpu className="h-3.5 w-3.5 shrink-0" />
-                <span>GEO ENGINE: GEMINI AI ACTIVE</span>
-              </div>
-            ) : (
-              <div className="flex items-center gap-1.5 bg-[#E8E4DF] text-[#1A1A1A] px-3 py-1.5 border border-[#1A1A1A] shadow-[2px_2px_0px_#1A1A1A]">
-                <Info className="h-3.5 w-3.5 shrink-0" />
-                <span>GEO ENGINE: DETERMINISTIC CORE</span>
-              </div>
-            )}
+          <div className="flex items-center gap-1.5 bg-[#E8E4DF] text-[#1A1A1A] px-3 py-1.5 border border-[#1A1A1A] shadow-[2px_2px_0px_#1A1A1A] text-[10px] uppercase tracking-widest font-extrabold">
+            <span>ROUTING ENGINE: OSRM + NOMINATIM</span>
           </div>
         </div>
       </header>

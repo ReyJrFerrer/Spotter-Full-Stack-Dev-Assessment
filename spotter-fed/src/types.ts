@@ -88,6 +88,7 @@ export interface TripGenerationResult {
   current: GeocodedLocation;
   pickup: GeocodedLocation;
   dropoff: GeocodedLocation;
+  routeCoordinates: [number, number][];
   legs: RouteLeg[];
   totalDistanceMiles: number;
   totalDurationHours: number;
