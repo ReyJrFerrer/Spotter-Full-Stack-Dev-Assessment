@@ -27,10 +27,10 @@ The Spotter Assessment is a full-stack web application that generates optimized 
 │   React SPA              │     │   Django Backend          │
 │   (spotter-fed/)         │◄───►│   (spotter-bed/)          │
 │                           │     │                           │
-│  MUI Components           │     │  DRF: POST /api/trips/    │
+│  Tailwind CSS Components  │     │  DRF: POST /api/trips/    │
 │  Leaflet Map              │     │  HOS Engine (Python)      │
 │  SVG ELD Grid             │     │  OSRM Routing API         │
-│  Dark/Light Theme         │     │  Nominatim Geocoding      │
+│  Dark/Light Theme (spec)  │     │  Nominatim Geocoding      │
 │                           │     │  CORS Whitelisting        │
 └─────────────────────────┘     └─────────────┬───────────────┘
                                                │
@@ -72,7 +72,8 @@ The Spotter Assessment is a full-stack web application that generates optimized 
 | `src/components/CalculatedMap.tsx` | Leaflet map with route tracing |
 | `src/components/ItineraryPanel.tsx` | Chronological stop timeline |
 | `src/components/EldLogSheets.tsx` | SVG ELD log grid with 15-min increments |
-| `src/utils/hosSimulator.ts` | TypeScript HOS engine (legacy — used by Express) |
+| `src/utils/apiTransform.ts` | Backend snake_case → frontend camelCase transformer |
+| `src/App.tsx` | Root component — orchestrates layout and API calls |
 
 ## Deployment
 

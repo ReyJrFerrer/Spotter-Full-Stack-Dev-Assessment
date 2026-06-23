@@ -26,3 +26,16 @@
 - Verified all wikilinks resolve to existing files
 - Checked for orphan pages and contradictions
 - All pages properly cross-referenced; no orphans found
+
+## [2026-06-23] ingest | Ingested frontend integration changes
+- Ingested 1 raw note: frontend-integration-update
+- Updated 3 wiki pages: frontend-components, project-architecture, api-specification
+- Removed references to Express server, hosSimulator.ts from wiki articles
+- Added apiTransform.ts layer documentation
+- Updated _index.md with new source entry and stats
+
+## [2026-06-23] lint | Frontend integration health check
+- Verified all wiki articles updated with consistent integration information
+- Checked for stale claims about Express server or hosSimulator (none found)
+- Verified all 9 wiki articles + 11 raw sources have valid YAML frontmatter
+- Verified all wikilinks resolve to existing files

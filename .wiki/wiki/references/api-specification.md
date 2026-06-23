@@ -90,9 +90,9 @@ All 4 fields are required. `current_cycle_used_hrs` must be a float between 0.0 
 }
 ```
 
-## Legacy Express API
+## Frontend Integration
 
-The original Express implementation (`server.ts`) at `GET /api/health` and `POST /api/generate-trip` uses camelCase field names and also returns `hosSimulator.ts` results with a `success` wrapper. The Django DRF backend is now the authoritative API.
+The frontend (`spotter-fed/`) calls this endpoint directly via Vite proxy. The `apiTransform.ts` utility converts snake_case response fields to camelCase (e.g. `route_geometry` → `routeCoordinates`, `activity_name` → `activityName`) for use in React components.
 
 ## Data Types
 

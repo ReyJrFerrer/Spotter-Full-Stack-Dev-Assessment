@@ -8,6 +8,7 @@ confidence: high
 sources:
   - raw/notes/project-codebase-state.md
   - raw/notes/tech-stack-details.md
+  - raw/notes/frontend-integration-update.md
 ---
 
 # Frontend Components
@@ -15,7 +16,8 @@ sources:
 ## Architecture
 
 - **Framework:** React 19 with TypeScript, Vite 6 bundler, Tailwind CSS 4
-- **Current API layer:** Express server (`server.ts`)
+- **API layer:** Vite proxy → Django DRF backend at `localhost:8000`
+- **API transform:** `apiTransform.ts` converts backend snake_case → frontend camelCase
 - **State:** Component-local state + prop drilling
 
 ## Components
@@ -47,15 +49,23 @@ sources:
 - Remarks table with status badges
 - Mock DOT portal submission button
 
+## API Transform Layer (`src/utils/apiTransform.ts`)
+- `mapBackendResponse(data)` — Converts backend snake_case to frontend camelCase
+- `mergeUserMetadata(result, carrier, tractor, trailer)` — Patches user-entered metadata onto all daily logs after backend response
+- Handles all type renames: `route_geometry` → `routeCoordinates`, `activity_name` → `activityName`, `start_hour` → `startHour`, etc.
+
 ## Main App (`src/App.tsx`)
 - Orchestrates all components
 - Auto-loads default trip on mount
+- Sends `POST /api/trips/generate/` with 4 snake_case fields
+- Transforms response via `mapBackendResponse()`, then merges user metadata
 - Layout: Header → Form → Map + Itinerary (7-col) + Logs (5-col)
-- Error handling with alert banner
+- Error handling with alert banner (displays backend error messages directly)
 - Footer with compliance branding
 
 ## Cross-References
 
 - [[eld-log-grid|ELD Log Grid]] — the SVG grid component
-- [[trip-routing-engine|Trip Routing Engine]] — the HOS simulation logic
+- [[trip-routing-engine|Trip Routing Engine]] — the HOS simulation logic (now Python back end)
 - [[api-specification|API Specification]] — the API endpoint consumed
+- [[design-system|Design System Reference]] — UI/UX design system, colors, typography, theming
