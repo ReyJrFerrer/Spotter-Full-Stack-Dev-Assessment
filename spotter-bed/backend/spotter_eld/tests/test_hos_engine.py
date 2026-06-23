@@ -163,6 +163,45 @@ class HOSEngineTests(TestCase):
         ]
         self.assertGreaterEqual(len(restart_items), 1)
 
+    def test_34h_restart_resets_cycle_hours(self):
+        """34-hour restart resets total_cycle_hours_used so trip can continue."""
+        result = self._run_engine(
+            self.los_angeles,
+            self.las_vegas,
+            self.salt_lake_city,
+            cycle_used=68.0,
+        )
+        restart_items = [
+            item for item in result.itinerary
+            if "34-Hour" in item.activity_name
+        ]
+        self.assertGreater(len(restart_items), 0)
+
+        first_restart_idx = next(
+            i for i, item in enumerate(result.itinerary)
+            if "34-Hour" in item.activity_name
+        )
+        items_before = result.itinerary[:first_restart_idx]
+        cycle_before = sum(
+            item.duration_hours
+            for item in items_before
+            if item.status in (DutyStatus.D, DutyStatus.ON)
+        )
+        self.assertGreaterEqual(
+            68.0 + cycle_before, 70.0,
+        )
+
+        items_after = result.itinerary[first_restart_idx + 1:]
+        duty_after = sum(
+            item.duration_hours
+            for item in items_after
+            if item.status in (DutyStatus.D, DutyStatus.ON)
+        )
+        self.assertGreater(
+            duty_after, 0,
+            msg="Trip should continue with driving after 34h restart",
+        )
+
     def test_itinerary_items_have_remarks(self):
         """Every itinerary item has a remarks string."""
         result = self._run_engine(

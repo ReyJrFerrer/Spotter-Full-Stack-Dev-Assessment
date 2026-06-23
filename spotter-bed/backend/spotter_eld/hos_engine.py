@@ -69,14 +69,20 @@ def simulate_trip(
     carrier_name: str = "",
     tractor_number: str = "",
     trailer_number: str = "",
+    external_legs: Optional[List[RouteLeg]] = None,
 ) -> TripGenerationResult:
     if start_time_iso is None:
         start_time_iso = datetime.now(timezone.utc)
     current_time = start_time_iso
 
-    legs, total_distance_miles, total_duration_hours = _make_legs(
-        current, pickup, dropoff
-    )
+    if external_legs and len(external_legs) == 2:
+        legs = external_legs
+        total_distance_miles = sum(leg.distance_miles for leg in legs)
+        total_duration_hours = sum(leg.duration_hours for leg in legs)
+    else:
+        legs, total_distance_miles, total_duration_hours = _make_legs(
+            current, pickup, dropoff
+        )
 
     state = DriverState(total_cycle_hours_used=current_cycle_used)
     itinerary: List[ItineraryItem] = []
@@ -117,23 +123,23 @@ def simulate_trip(
             state.accum_driving_today += duration_hours
             state.continuous_driving_since_break += duration_hours
             state.total_cycle_hours_used += duration_hours
-            state.elapsed_duty_window_today += duration_hours
             state.miles_since_fueling += distance_miles
         elif status == DutyStatus.ON:
-            state.elapsed_duty_window_today += duration_hours
             state.total_cycle_hours_used += duration_hours
+
+        state.elapsed_duty_window_today += duration_hours
 
     def trigger_10h_reset(
         location: str, coords: Tuple[float, float], reason: str
     ) -> None:
         add_itinerary(
-            DutyStatus.SB,
+            DutyStatus.OFF,
             "10-Hour Daily Reset Break",
             location,
             10.0,
             0,
             coords,
-            f"HOS Reset: 10 hrs consecutive Sleeper Berth ({reason})",
+            f"HOS Reset: 10 hrs consecutive Off Duty ({reason})",
         )
         state.accum_driving_today = 0.0
         state.elapsed_duty_window_today = 0.0

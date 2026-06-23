@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from spotter_eld.serializers import TripInputSerializer
-from spotter_eld.geocoding import geocode_location
+from spotter_eld.geocoding import geocode_location, osrm_route
 from spotter_eld.hos_engine import simulate_trip
 
 
@@ -35,19 +35,29 @@ class TripGenerateView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        osrm_result = osrm_route([current_loc, pickup_loc, dropoff_loc])
+        route_geometry = []
+        osrm_legs = None
+        if osrm_result is not None:
+            osrm_legs, route_geometry = osrm_result
+
         result = simulate_trip(
             current=current_loc,
             pickup=pickup_loc,
             dropoff=dropoff_loc,
             current_cycle_used=data["current_cycle_used_hrs"],
             start_time_iso=datetime.now(timezone.utc),
+            external_legs=osrm_legs,
         )
 
-        return Response(_serialize_result(result))
+        return Response(_serialize_result(result, route_geometry))
 
 
-def _serialize_result(result):
+def _serialize_result(result, route_geometry=None):
+    if route_geometry is None:
+        route_geometry = []
     return {
+        "route_geometry": [[lat, lng] for lat, lng in route_geometry],
         "current": _serialize_location(result.current),
         "pickup": _serialize_location(result.pickup),
         "dropoff": _serialize_location(result.dropoff),
