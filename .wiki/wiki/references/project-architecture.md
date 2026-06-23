@@ -3,12 +3,14 @@ title: "Project Architecture Reference"
 type: reference
 summary: "Complete system architecture overview of the Spotter Assessment — a full-stack Django/React application for ELD log generation."
 tags: [architecture, overview, system-design]
-date: 2026-06-22
+date: 2026-06-23
 confidence: high
 sources:
   - raw/articles/backend-specifications.md
   - raw/articles/system-architecture.md
   - raw/articles/ui-specifications.md
+  - raw/notes/backend-implementation-details.md
+  - raw/notes/backend-codebase-update.md
   - raw/notes/project-codebase-state.md
 ---
 
@@ -16,79 +18,66 @@ sources:
 
 ## High-Level Overview
 
-The Spotter Assessment is a full-stack web application that generates AI-optimized trucking routes and FMCSA-compliant ELD daily log sheets.
+The Spotter Assessment is a full-stack web application that generates optimized trucking routes and FMCSA-compliant ELD daily log sheets.
 
-```
-[User] → [React SPA] → [Express/Django API] → [Map API]
-                               ↓
-                    [HOS Algorithm Engine]
-                               ↓
-                    [ELD Log Data Generator]
-                               ↓
-                    [JSON Response → Frontend]
-```
-
-## Current Architecture (as built)
-
-```
-┌─────────────────────────────────────────────────────┐
-│                   React SPA (spotter-fed/)           │
-│                                                      │
-│  TripDetailsForm → Express API (server.ts)           │
-│       ↓                      ↓                       │
-│  CalculatedMap       hosSimulator.ts                 │
-│  ItineraryPanel        (HOS Engine)                  │
-│  EldLogSheets                                        │
-└─────────────────────────────────────────────────────┘
-```
-
-The Express server (`server.ts`) acts as the current API layer, handling geocoding (Gemini AI or local) and calling the TypeScript HOS engine.
-
-## Planned Architecture (per spec)
+## Architecture
 
 ```
 ┌─────────────────────────┐     ┌─────────────────────────┐
-│   React SPA             │     │   Django Backend         │
-│   (spotter-fed/)        │◄───►│   (spotter-bed/)         │
-│                         │     │                          │
-│  MUI Components         │     │  DRF: POST /api/trips/   │
-│  Leaflet Map            │     │  HOS Engine (Python)     │
-│  SVG ELD Grid           │     │  Map API Integration     │
-│  Dark/Light Theme       │     │  CORS Whitelisting       │
-└─────────────────────────┘     └─────────────────────────┘
+│   React SPA              │     │   Django Backend          │
+│   (spotter-fed/)         │◄───►│   (spotter-bed/)          │
+│                           │     │                           │
+│  MUI Components           │     │  DRF: POST /api/trips/    │
+│  Leaflet Map              │     │  HOS Engine (Python)      │
+│  SVG ELD Grid             │     │  OSRM Routing API         │
+│  Dark/Light Theme         │     │  Nominatim Geocoding      │
+│                           │     │  CORS Whitelisting        │
+└─────────────────────────┘     └─────────────┬───────────────┘
+                                               │
+                                               ↓
+                                        ┌──────────────┐
+                                        │  External     │
+                                        │  Map APIs     │
+                                        │  (OSRM/       │
+                                        │   Nominatim)  │
+                                        └──────────────┘
 ```
 
 ## Data Flow
 
-1. User submits trip form → `POST /api/generate-trip`
-2. Server geocodes locations (Gemini AI or mock database)
-3. HOS engine simulates trip with constraint enforcement
-4. Trip partitioned into daily log sheets
-5. JSON response returned with:
-   - Route coordinates for map
-   - Chronological itinerary
-   - Daily log sheet objects with grid coordinates
-6. Frontend renders map, itinerary, and ELD grids
+1. User submits trip form → `POST /api/trips/generate/`
+2. Backend geocodes locations (city DB → Nominatim fallback)
+3. Backend calls OSRM for route distance/geometry (falls back to Euclidean estimate)
+4. HOS engine (Python) simulates trip with constraint enforcement
+5. Trip partitioned into daily log sheets
+6. JSON response returned with: route coordinates, itinerary, daily logs
+7. Frontend renders map, itinerary, ELD grids
 
-## Key Files
+## Backend (spotter-bed/)
 
 | File | Purpose |
 |---|---|
-| `spotter-fed/src/utils/hosSimulator.ts` | HOS algorithm engine (TypeScript) |
-| `spotter-fed/server.ts` | Express API server |
-| `spotter-fed/src/App.tsx` | Main React component |
-| `spotter-fed/src/components/TripDetailsForm.tsx` | Input form |
-| `spotter-fed/src/components/CalculatedMap.tsx` | Map display |
-| `spotter-fed/src/components/ItineraryPanel.tsx` | Chronological timeline |
-| `spotter-fed/src/components/EldLogSheets.tsx` | ELD log grid |
-| `spotter-fed/src/types.ts` | TypeScript type definitions |
-| `spotter-bed/backend/backend/settings.py` | Django settings |
-| `spotter-bed/backend/backend/urls.py` | Django URL config |
+| `spotter_eld/hos_engine.py` | HOS algorithm engine — iterative scheduler |
+| `spotter_eld/eld_generator.py` | Daily log partitioning |
+| `spotter_eld/geocoding.py` | City DB + Nominatim + OSRM routing |
+| `spotter_eld/views.py` | DRF API views |
+| `spotter_eld/types.py` | Data class definitions |
+| `spotter_eld/tests/` | 114 tests across 7 files |
+
+## Frontend (spotter-fed/)
+
+| File | Purpose |
+|---|---|
+| `src/components/TripDetailsForm.tsx` | Input form (4 fields) |
+| `src/components/CalculatedMap.tsx` | Leaflet map with route tracing |
+| `src/components/ItineraryPanel.tsx` | Chronological stop timeline |
+| `src/components/EldLogSheets.tsx` | SVG ELD log grid with 15-min increments |
+| `src/utils/hosSimulator.ts` | TypeScript HOS engine (legacy — used by Express) |
 
 ## Deployment
 
-- Docker containerization for backend
-- Vercel deployment for both frontend and backend
+- Vercel deployment target for both frontend and backend
+- Docker configuration not yet implemented
 
 ## Cross-References
 

@@ -12,3 +12,17 @@
 - Created 2 entity pages: frontend-components, backend-django
 - Created 3 reference pages: project-architecture, api-specification, design-system
 - Updated _index.md and log.md
+
+## [2026-06-23] ingest | Ingested backend implementation into wiki
+- Created 4 raw notes from actual codebase: hos-engine-implementation, eld-generator-implementation, geocoding-routing-implementation, backend-implementation-details
+- Created backend-codebase-update note reflecting post-implementation state
+- Rewrote concept pages (hours-of-service, eld-log-generation, trip-routing-engine) with actual Python implementation details
+- Rewrote backend-django entity page with actual file map and class structure
+- Rewrote api-specification and project-architecture references with DRF endpoint details
+- Updated _index.md with new sources and updated summaries
+
+## [2026-06-23] lint | Initial wiki health check
+- Verified all 9 wiki articles have valid YAML frontmatter
+- Verified all wikilinks resolve to existing files
+- Checked for orphan pages and contradictions
+- All pages properly cross-referenced; no orphans found
