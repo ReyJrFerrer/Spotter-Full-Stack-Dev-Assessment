@@ -133,13 +133,22 @@ def simulate_trip(
         location: str, coords: Tuple[float, float], reason: str
     ) -> None:
         add_itinerary(
-            DutyStatus.OFF,
-            "10-Hour Daily Reset Break",
+            DutyStatus.SB,
+            "10-Hour Daily Reset - Sleeper Berth",
             location,
-            10.0,
+            8.0,
             0,
             coords,
-            f"HOS Reset: 10 hrs consecutive Off Duty ({reason})",
+            f"Sleeper Berth: 8 hrs (part of 10-hour HOS reset, {reason})",
+        )
+        add_itinerary(
+            DutyStatus.OFF,
+            "10-Hour Daily Reset - Off Duty",
+            location,
+            2.0,
+            0,
+            coords,
+            f"Off Duty: 2 hrs (completing 10-hour HOS reset, {reason})",
         )
         state.accum_driving_today = 0.0
         state.elapsed_duty_window_today = 0.0
