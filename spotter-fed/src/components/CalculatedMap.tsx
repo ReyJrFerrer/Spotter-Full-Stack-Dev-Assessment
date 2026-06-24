@@ -162,7 +162,7 @@ export default function CalculatedMap({ start, pickup, dropoff, itinerary, route
     <div id="results-map-panel" className="bg-white border-2 border-[#1A1A1A] p-6 shadow-[6px_6px_0px_#133658] flex flex-col h-full">
       <div className="flex items-center justify-between border-b-2 border-[#1A1A1A] pb-4 mb-4">
         <div className="flex items-center gap-2">
-          <MapIcon className="h-5 w-5 text-[#1A1A1A]" />
+          <MapIcon className="h-5 w-5 text-[#FD5368]" />
           <h2 className="text-xs font-bold uppercase tracking-widest text-[#1A1A1A]">2. Interactive Commercial Truck Route</h2>
         </div>
         <button
@@ -220,7 +220,7 @@ export default function CalculatedMap({ start, pickup, dropoff, itinerary, route
       </div>
 
       <div className="mt-4 flex items-center gap-2 text-[10px] text-[#1A1A1A]/70 uppercase tracking-wider font-bold bg-[#E8E4DF]/60 p-3 border border-[#1A1A1A]/20">
-        <ShieldCheck className="h-4 w-4 text-[#1A1A1A] shrink-0" />
+        <ShieldCheck className="h-4 w-4 text-[#FD5368] shrink-0" />
         <span>Stops comply with standard FMCSA 11h driving / 14h window rules.</span>
       </div>
     </div>
