@@ -1,8 +1,20 @@
+from django.http import JsonResponse
 from django.urls import path
 
 from spotter_eld.views import HealthView, TripGenerateView
 
+def api_root(request):
+    return JsonResponse({
+        "service": "Spotter ELD API",
+        "status": "running",
+        "endpoints": {
+            "health": "/api/health/",
+            "generate": "/api/trips/generate/"
+        }
+    })
+
 urlpatterns = [
+    path("", api_root, name="api-root"),
     path("api/health/", HealthView.as_view(), name="api-health"),
     path("api/trips/generate/", TripGenerateView.as_view(), name="api-trips-generate"),
 ]

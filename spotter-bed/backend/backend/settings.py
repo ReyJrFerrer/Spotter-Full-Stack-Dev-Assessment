@@ -13,6 +13,7 @@ CORS_ALLOWED_ORIGINS = os.environ.get(
     'CORS_ALLOWED_ORIGINS',
     'http://localhost:3000,http://127.0.0.1:3000',
 ).split(',')
+CORS_ALLOWED_ORIGINS = [o for o in CORS_ALLOWED_ORIGINS if o]
 
 CORS_ALLOW_CREDENTIALS = True
 
@@ -34,7 +35,7 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'backend.urls'
 
-WSGI_APPLICATION = 'backend.wsgi.app'
+WSGI_APPLICATION = 'backend.wsgi.application'
 
 DATABASES = {} if os.environ.get('VERCEL') else {
     'default': {
