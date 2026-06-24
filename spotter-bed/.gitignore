@@ -2,3 +2,4 @@ backend/backend/__pycache__
 backend/db.sqlite3
 backend/spotter_eld/__pycache__
 /backend/spotter_eld/tests/__pycache__
+.env
