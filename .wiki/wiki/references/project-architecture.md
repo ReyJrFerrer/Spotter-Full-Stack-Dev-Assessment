@@ -12,6 +12,7 @@ sources:
   - raw/notes/backend-implementation-details.md
   - raw/notes/backend-codebase-update.md
   - raw/notes/project-codebase-state.md
+  - raw/notes/deployment-progress-update.md
 ---
 
 # Project Architecture Reference
@@ -75,10 +76,42 @@ The Spotter Assessment is a full-stack web application that generates optimized 
 | `src/utils/apiTransform.ts` | Backend snake_case → frontend camelCase transformer |
 | `src/App.tsx` | Root component — orchestrates layout and API calls |
 
-## Deployment
+## Deployment (Vercel)
 
-- Vercel deployment target for both frontend and backend
+Both frontend and backend are configured for Vercel deployment.
+
+### Backend (`spotter-bed/`)
+
+| Artifact | Purpose |
+|---|---|
+| `vercel.json` | `@vercel/python` build from `backend/backend/wsgi.py`, wildcard route |
+| `.vercelignore` | Skips `venv/`, `__pycache__/`, tests/ |
+| `requirements.txt` | Django 6.0.6, DRF 3.17.1, django-cors-headers 4.9.0 |
+| `.python-version` | Python 3.12 |
+
+**Stateless mode:** `settings.py` checks for `VERCEL` env var — when set, `DATABASES = {}` and all config is read from environment variables (`ALLOWED_HOSTS`, `CORS_ALLOWED_ORIGINS`, `SECRET_KEY`, `DEBUG`).
+
+**WSGI module resolution:** `wsgi.py` inserts the `backend/` parent directory into `sys.path` before importing Django, fixing module discovery on Vercel.
+
+### Frontend (`spotter-fed/`)
+
+| Artifact | Purpose |
+|---|---|
+| `vercel.json` | SPA rewrites — all routes served by `/index.html` |
+| `App.tsx` | `VITE_API_URL` env var, trailing-slash stripped |
+
+**API base URL:** configured via `VITE_API_URL` env var, with trailing slash stripped to avoid double-slash in requests.
+
+### CORS
+
+- Default origins: `http://localhost:5173` (Vite dev), `http://127.0.0.1:3000`
+- Configured via comma-separated `CORS_ALLOWED_ORIGINS` env var
+
+### Notes
+
 - Docker configuration not yet implemented
+- Vercel deployment configuration was iterated over 7 commits on June 24, 2026
+- Key iteration: module resolution fix (`sys.path`), stateless DB, env-driven config
 
 ## Cross-References
 
@@ -86,3 +119,4 @@ The Spotter Assessment is a full-stack web application that generates optimized 
 - [[backend-django|Django Backend Structure]] — Backend implementation
 - [[api-specification|API Specification]] — Endpoint definitions
 - [[hours-of-service|FMCSA HOS Rules]] — Core business logic
+- [[deployment-progress-update|Deployment Progress Update]] — Full commit analysis

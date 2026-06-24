@@ -39,3 +39,8 @@
 - Checked for stale claims about Express server or hosSimulator (none found)
 - Verified all 9 wiki articles + 11 raw sources have valid YAML frontmatter
 - Verified all wikilinks resolve to existing files
+
+## [2026-06-24] ingest | Ingested Vercel deployment progress
+- Created 1 raw note from git commit analysis: deployment-progress-update
+- Updated 2 wiki pages: project-architecture (added Vercel deployment section), backend-django (updated settings/wsgi/urls, deployment artifacts, Python version)
+- Updated _index.md with new source entry and stats (12 raw sources)

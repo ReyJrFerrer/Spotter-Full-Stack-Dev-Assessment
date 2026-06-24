@@ -12,6 +12,7 @@ sources:
   - raw/notes/hos-engine-implementation.md
   - raw/notes/eld-generator-implementation.md
   - raw/notes/geocoding-routing-implementation.md
+  - raw/notes/deployment-progress-update.md
 ---
 
 # Django Backend Structure
@@ -22,15 +23,19 @@ The `spotter-bed/` directory contains a fully implemented Django 6.0.6 + DRF 3.1
 
 ```
 spotter-bed/
-├── Pipfile              # django, djangorestframework, django-cors-headers
-├── venv/                # Python 3.14 virtual environment
+├── vercel.json              # @vercel/python WSGI build config
+├── .vercelignore            # Excludes venv/, tests/, __pycache__/
+├── requirements.txt         # Django 6.0.6, DRF 3.17.1, cors-headers 4.9.0
+├── .python-version          # 3.12
+├── Pipfile                  # django, djangorestframework, django-cors-headers
+├── venv/                    # Python 3.12 virtual environment
 └── backend/
     ├── manage.py
-    ├── backend/         # Django project config
-    │   ├── settings.py  # DRF, CORS (localhost:3000), spotter_eld registered
-    │   ├── urls.py      # Includes spotter_eld.urls
-    │   └── wsgi.py / asgi.py
-    └── spotter_eld/      # Django app (fully implemented)
+    ├── backend/             # Django project config
+    │   ├── settings.py      # DRF, CORS (localhost:5173), spotter_eld registered, env-driven config
+    │   ├── urls.py          # Includes spotter_eld.urls
+    │   └── wsgi.py          # sys.path hack for Vercel module resolution
+    └── spotter_eld/          # Django app (fully implemented)
         ├── types.py         # Data classes (82 lines)
         ├── hos_engine.py    # HOS algorithm engine (387 lines)
         ├── eld_generator.py # ELD log partitioning (176 lines)
@@ -38,7 +43,7 @@ spotter-bed/
         ├── views.py         # HealthView + TripGenerateView (131 lines)
         ├── serializers.py   # TripInputSerializer (8 lines)
         ├── utils.py         # Rounding, formatting, interpolation (35 lines)
-        ├── urls.py          # API routes: /api/health/, /api/trips/generate/
+        ├── urls.py          # API routes: /api/health/, /api/trips/generate/, root endpoint
         └── tests/           # 7 test files, 114 tests
 ```
 
@@ -59,10 +64,34 @@ Returns full trip result with:
 
 ## Dependencies
 
-- Python 3.14
+- Python 3.12 (Vercel runtime)
 - Django 6.0.6
 - djangorestframework 3.17.1
 - django-cors-headers 4.9.0
+
+## Deployment Configuration
+
+### Settings (`backend/backend/settings.py`)
+
+Key configuration decisions for Vercel:
+- **Env-driven**: `ALLOWED_HOSTS`, `CORS_ALLOWED_ORIGINS`, `SECRET_KEY`, `DEBUG` all read from environment variables with sensible defaults
+- **Stateless DB**: `DATABASES = {}` when `VERCEL` env is present (read-only on serverless); SQLite for local dev
+- **CORS defaults**: `http://localhost:5173` (Vite) and `http://127.0.0.1:3000`
+- **Installed apps**: Minimal set — `rest_framework`, `corsheaders`, `spotter_eld`, plus `django.contrib.contenttypes` and `django.contrib.auth` (restored after initial removal attempt)
+- **WSGI**: `backend.wsgi.application`
+
+### WSGI (`backend/backend/wsgi.py`)
+
+Modified for Vercel deployment:
+- Inserts `backend/` parent directory into `sys.path` before importing Django
+- Necessary because Vercel runs the WSGI app from a different working directory
+
+### URL Structure (`backend/spotter_eld/urls.py`)
+
+Three routes:
+- `""` → `api_root` — JSON service metadata (status, available endpoints)
+- `"api/health/"` → `HealthView`
+- `"api/trips/generate/"` → `TripGenerateView`
 
 ## Test Suite
 
@@ -78,11 +107,11 @@ Returns full trip result with:
 ## Outstanding Gaps
 
 - No Docker configuration (spec requirement)
-- No tests for 14hr window / 11hr limit enforcement
-- No fueling stop injection test for 1000+ mile trips
+- No production database strategy for serverless mode
 
 ## Cross-References
 
 - [[hours-of-service|FMCSA HOS Rules]] — business logic implemented in hos_engine.py
 - [[project-architecture|Project Architecture]] — overall system design
 - [[api-specification|API Specification]] — endpoint details
+- [[deployment-progress-update|Deployment Progress Update]] — full commit analysis

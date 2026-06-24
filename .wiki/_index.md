@@ -50,11 +50,12 @@
 | [[geocoding-routing-implementation\|Geocoding and Routing Implementation]] ([raw/notes/geocoding-routing-implementation](../raw/notes/geocoding-routing-implementation.md)) | Note | City DB, Nominatim, OSRM integration in geocoding.py |
 | [[backend-implementation-details\|Backend Implementation Details]] ([raw/notes/backend-implementation-details](../raw/notes/backend-implementation-details.md)) | Note | Complete backend file map, data types, views, test suite |
 | [[frontend-integration-update\|Frontend Integration Update]] ([raw/notes/frontend-integration-update](../raw/notes/frontend-integration-update.md)) | Note | Frontend refactored: Express removed, Vite proxy to Django, hosSimulator deleted, apiTransform created |
+| [[deployment-progress-update\|Deployment Progress Update]] ([raw/notes/deployment-progress-update](../raw/notes/deployment-progress-update.md)) | Note | Vercel deployment configuration — 7 commits, WSGI module fix, env-driven config, stateless DB, CORS port change |
 
 ## Stats
 
 | Area | Count |
 |---|---|
-| Raw sources | 11 |
+| Raw sources | 12 |
 | Wiki articles | 9 |
 | Uncompiled | 0 |
