@@ -1,0 +1,5 @@
+venv/
+*.pyc
+__pycache__/
+backend/spotter_eld/tests/
+backend/spotter_eld/migrations/__pycache__/

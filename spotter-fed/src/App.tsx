@@ -31,11 +31,13 @@ export default function App() {
     });
   }, []);
 
+  const API_BASE = import.meta.env.VITE_API_URL || '';
+
   const handleCalculate = async (inputs: TripInputs) => {
     setIsLoading(true);
     setErrorMsg(null);
     try {
-      const response = await fetch('/api/trips/generate/', {
+      const response = await fetch(`${API_BASE}/api/trips/generate/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
