@@ -109,13 +109,12 @@ export default function App() {
         {/* Top: Input form */}
         <TripDetailsForm onSubmit={handleCalculate} isLoading={isLoading} />
 
-        {/* Bottom Results Bento Grid */}
+        {/* Bottom Results: Map + Itinerary side by side, ELD full-width below */}
         {result ? (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
-            
-            {/* Left/Middle Column (7-col lg width): Interactive map & Chrono Timetable */}
-            <div className="lg:col-span-7 space-y-8 flex flex-col h-full">
-              <div className="flex-1">
+          <div className="space-y-8">
+            {/* Top Row: Map (7-col) + Itinerary (5-col), equal height */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+              <div className="lg:col-span-7">
                 <CalculatedMap
                   start={result.current}
                   pickup={result.pickup}
@@ -124,8 +123,7 @@ export default function App() {
                   routeCoordinates={result.routeCoordinates}
                 />
               </div>
-
-              <div>
+              <div className="lg:col-span-5">
                 <ItineraryPanel
                   itinerary={result.itinerary}
                   totalDistance={result.totalDistanceMiles}
@@ -134,11 +132,8 @@ export default function App() {
               </div>
             </div>
 
-            {/* Right Column (5-col lg width): Daily Certified Log Sheets */}
-            <div className="lg:col-span-12 xl:col-span-5">
-              <EldLogSheets dailyLogs={result.dailyLogs} />
-            </div>
-
+            {/* Bottom Row: ELD Logs — full width */}
+            <EldLogSheets dailyLogs={result.dailyLogs} />
           </div>
         ) : (
           <div className="text-center py-20 bg-white border border-[#1A1A1A] hover:shadow-none shadow-[4px_4px_0px_#1A1A1A] p-6">
