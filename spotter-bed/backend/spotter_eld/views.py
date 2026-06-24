@@ -9,6 +9,7 @@ from spotter_eld.serializers import TripInputSerializer, PdfExportRequestSeriali
 from spotter_eld.geocoding import geocode_location, nominatim_autocomplete, osrm_route
 from spotter_eld.hos_engine import simulate_trip
 from spotter_eld.pdf_export import build_eld_pdf
+from spotter_eld.utils import snap_point_to_polyline
 
 
 class HealthView(APIView):
@@ -63,6 +64,10 @@ class TripGenerateView(APIView):
             start_time_iso=datetime.now(timezone.utc),
             external_legs=osrm_legs,
         )
+
+        if route_geometry:
+            for item in result.itinerary:
+                item.coordinates = snap_point_to_polyline(item.coordinates, route_geometry)
 
         return Response(_serialize_result(result, route_geometry))
 
