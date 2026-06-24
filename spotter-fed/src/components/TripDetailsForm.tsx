@@ -60,7 +60,7 @@ export default function TripDetailsForm({ onSubmit, isLoading }: Props) {
   };
 
   return (
-    <div id="trip-input-dashboard" className="bg-white border-2 border-[#1A1A1A] p-6 shadow-[6px_6px_0px_#1A1A1A] transition-all">
+    <div id="trip-input-dashboard" className="bg-white border-2 border-[#1A1A1A] p-6 shadow-[6px_6px_0px_#133658] transition-all">
       <div className="flex items-center gap-2 mb-6 border-b-2 border-[#1A1A1A] pb-4">
         <Truck className="h-5 w-5 text-[#FD5368]" />
         <h2 className="text-sm font-bold uppercase tracking-widest text-[#1A1A1A]">1. Dispatch Parameters & HOS Setup</h2>

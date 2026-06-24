@@ -144,10 +144,10 @@ export default function EldLogSheets({ dailyLogs, tripContext }: Props) {
   };
 
   return (
-    <div id="results-eld-dashboard" className="bg-white border-2 border-[#1A1A1A] p-6 shadow-[6px_6px_0px_#1A1A1A]">
+    <div id="results-eld-dashboard" className="bg-white border-2 border-[#1A1A1A] p-6 shadow-[6px_6px_0px_#133658]">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b-2 border-[#1A1A1A] pb-5 mb-5">
         <div className="flex items-center gap-2">
-          <FileText className="h-5 w-5 text-[#1A1A1A]" />
+          <FileText className="h-5 w-5 text-[#FD5368]" />
           <h2 className="text-xs font-bold uppercase tracking-widest text-[#1A1A1A]">4. Certified FMCSA Daily ELD Logs</h2>
         </div>
 
@@ -183,7 +183,7 @@ export default function EldLogSheets({ dailyLogs, tripContext }: Props) {
           <div className="space-y-1">
             <span className="text-[#1A1A1A]/70 text-[9px] uppercase block">Date on Grid</span>
             <span className="text-xs text-[#1A1A1A] flex items-center gap-1.5">
-              <Calendar className="h-3.5 w-3.5 text-[#1A1A1A]" />
+              <Calendar className="h-3.5 w-3.5 text-[#FD5368]" />
               {activeLog.dateLabel}
             </span>
           </div>
@@ -203,7 +203,7 @@ export default function EldLogSheets({ dailyLogs, tripContext }: Props) {
 
           <div className="space-y-1">
             <span className="text-[#1A1A1A]/70 text-[9px] uppercase block">Miles Driven Today</span>
-            <span className="text-sm text-[#FF6B00] block">
+            <span className="text-sm text-[#FD5368] block">
               {activeLog.totalMilesDriven} mi
             </span>
           </div>
@@ -396,7 +396,7 @@ export default function EldLogSheets({ dailyLogs, tripContext }: Props) {
           <text
             x={width - rightPadding + 25}
             y={height - 2}
-            fill="#FF6B00"
+            fill="#FD5368"
             fontSize="8"
             fontWeight="bold"
             textAnchor="middle"
@@ -433,7 +433,7 @@ export default function EldLogSheets({ dailyLogs, tripContext }: Props) {
                   <td className="py-3.5 px-4 font-mono text-slate-900 text-[11px] font-bold">{rem.timeLabel}</td>
                   <td className="py-3.5 px-4 font-mono font-bold text-[10px]">
                     {rem.status === DutyStatus.D && <span className="text-white bg-[#1A1A1A] px-1.5 py-0.5 border border-[#1A1A1A] text-[9px] tracking-wider font-extrabold uppercase rounded-none">DRIVING</span>}
-                    {rem.status === DutyStatus.ON && <span className="text-white bg-[#FF6B00] px-1.5 py-0.5 border border-[#FF6B00] text-[9px] tracking-wider font-extrabold uppercase rounded-none">ON DUTY</span>}
+                    {rem.status === DutyStatus.ON && <span className="text-white bg-[#FD5368] px-1.5 py-0.5 border border-[#FF6B00] text-[9px] tracking-wider font-extrabold uppercase rounded-none">ON DUTY</span>}
                     {rem.status === DutyStatus.OFF && <span className="text-[#1A1A1A] bg-[#E8E4DF] px-1.5 py-0.5 border border-[#1A1A1A] text-[9px] tracking-wider font-extrabold uppercase rounded-none">OFF DUTY</span>}
                     {rem.status === DutyStatus.SB && <span className="text-[#1A1A1A] bg-[#F4F1ED] px-1.5 py-0.5 border border-[#1A1A1A] text-[9px] tracking-wider font-extrabold uppercase rounded-none">SLEEPER</span>}
                   </td>
@@ -463,7 +463,7 @@ export default function EldLogSheets({ dailyLogs, tripContext }: Props) {
             id="btn-eld-pdf-export"
             onClick={handleExportPdf}
             disabled={isExporting}
-            className="bg-[#1A1A1A] hover:bg-black disabled:bg-slate-300 text-white text-xs font-bold uppercase tracking-widest border border-[#1A1A1A] px-5 py-3 rounded-none flex items-center gap-1.5 active:scale-95 transition-all shadow-[3px_3px_0px_#FF6B00] hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px] cursor-pointer"
+            className="bg-[#1A1A1A] hover:bg-black disabled:bg-slate-300 text-white text-xs font-bold uppercase tracking-widest border border-[#1A1A1A] px-5 py-3 rounded-none flex items-center gap-1.5 active:scale-95 transition-all shadow-[3px_3px_0px_#FD5368] hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px] cursor-pointer"
           >
             <Download className="h-3.5 w-3.5" />
             {isExporting ? "GENERATING PDF..." : "EXPORT PDF"}

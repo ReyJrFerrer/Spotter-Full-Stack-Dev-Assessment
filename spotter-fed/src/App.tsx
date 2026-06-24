@@ -79,16 +79,19 @@ export default function App() {
     <div className="min-h-screen bg-[#F4F1ED] flex flex-col text-[#1A1A1A]">
       
       {/* 1. Header Navigation Banner: Editorial Layout */}
-      <header className="bg-[#F4F1ED] text-[#1A1A1A] border-b-2 border-[#1A1A1A] sticky top-0 z-50 py-5">
+      <header className="bg-[#BDE0DF] text-[#1A1A1A] border-b-2 border-[#1A1A1A] sticky top-0 z-50 py-5">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row md:items-baseline md:justify-between gap-4">
           <div>
-            <h1 className="text-3xl md:text-4xl font-serif italic font-black tracking-tighter">
-              ELD.01 <span className="text-xs font-sans not-italic uppercase tracking-[0.25em] font-bold ml-2 md:ml-4 opacity-70">Route & Log Generator</span>
+            <h1 className="text-4xl md:text-4xl font-serif italic font-black  text-[#FD5368] tracking-tighter">
+              <span style={{ textShadow: '6px -4px 0px #F4F1ED' }}>
+                ELD.01
+              </span>
+              <span className="text-xs font-sans not-italic uppercase tracking-[0.25em] font-bold ml-2 md:ml-4 ">Route & Log Generator</span>
             </h1>
-            <p className="text-[10px] uppercase tracking-widest font-bold opacity-60 mt-1">Automated Commercial Truck Routing & Certified Daily Log System</p>
+            <p className="text-[10px] uppercase tracking-widest font-bold opacity-40 mt-1">Automated Commercial Truck Routing & Certified Daily Log System</p>
           </div>
 
-          <div className="flex items-center gap-1.5 bg-[#E8E4DF] text-[#1A1A1A] px-3 py-1.5 border border-[#1A1A1A] shadow-[2px_2px_0px_#1A1A1A] text-[10px] uppercase tracking-widest font-extrabold">
+          <div className="flex items-center gap-1.5 bg-[#FD5368] text-white px-3 py-1.5 border border-[#1A1A1A] shadow-[2px_2px_0px_#133658] text-[10px] uppercase tracking-widest font-extrabold">
             <span>ROUTING ENGINE: OSRM + NOMINATIM</span>
           </div>
         </div>
@@ -158,12 +161,12 @@ export default function App() {
       </main>
 
       {/* 3. Footer branding */}
-      <footer className="bg-[#1A1A1A] text-white/60 text-xs py-8 border-t-2 border-[#1A1A1A] mt-12 bg-cover">
+      <footer className="bg-[#133658] text-white/60 text-xs py-8 border-t-2 border-[#133658] mt-12 bg-cover">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <p>© 2026 E-DOT Dispatch Terminal. Certified in compliance with § 395.22, ELD requirements.</p>
           <div className="flex items-center gap-1.5 text-[11px] text-white/80">
-            <ShieldCheck className="h-4 w-4 text-[#FF6B00]" />
-            <span className="font-bold uppercase tracking-widest text-[9px]">Secure E-DOT Inspect Dataset Transfer</span>
+            <ShieldCheck className="h-4 w-4 text-[#FD5368]" />
+            <span className="font-bold uppercase tracking-widest text-[9px]">Reynaldo Jr. D. Ferrer</span>
           </div>
         </div>
       </footer>

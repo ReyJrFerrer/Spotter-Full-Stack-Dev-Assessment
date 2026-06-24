@@ -15,7 +15,7 @@ body {
 
 /* Custom styling to override Leaflet default blue popups and align with editorial theme */
 .leaflet-popup-content-wrapper {
-  background: #F4F1ED !important;
+  background: #BDE0DF !important;
   color: #1A1A1A !important;
   border: 1px solid #1A1A1A !important;
   border-radius: 0px !important;

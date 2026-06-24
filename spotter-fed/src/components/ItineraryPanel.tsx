@@ -48,7 +48,7 @@ const getEventIcon = (status: DutyStatus, name: string) => {
 
 export default function ItineraryPanel({ itinerary, totalDistance, totalDurationHours }: Props) {
   return (
-    <div id="itinerary-timeline-dashboard" className="bg-white border-2 border-[#1A1A1A] p-6 shadow-[6px_6px_0px_#1A1A1A] flex flex-col h-full">
+    <div id="itinerary-timeline-dashboard" className="bg-white border-2 border-[#1A1A1A] p-6 shadow-[6px_6px_0px_#133658] flex flex-col h-full">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b-2 border-[#1A1A1A] pb-4 mb-4">
         <div>
           <h2 className="text-xs font-bold uppercase tracking-widest text-[#1A1A1A] flex items-center gap-2">

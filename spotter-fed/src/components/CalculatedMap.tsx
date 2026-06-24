@@ -159,10 +159,10 @@ export default function CalculatedMap({ start, pickup, dropoff, itinerary, route
   };
 
   return (
-    <div id="results-map-panel" className="bg-white border-2 border-[#1A1A1A] p-6 shadow-[6px_6px_0px_#1A1A1A] flex flex-col h-full">
+    <div id="results-map-panel" className="bg-white border-2 border-[#1A1A1A] p-6 shadow-[6px_6px_0px_#133658] flex flex-col h-full">
       <div className="flex items-center justify-between border-b-2 border-[#1A1A1A] pb-4 mb-4">
         <div className="flex items-center gap-2">
-          <MapIcon className="h-5 w-5 text-[#FD5368]" />
+          <MapIcon className="h-5 w-5 text-[#1A1A1A]" />
           <h2 className="text-xs font-bold uppercase tracking-widest text-[#1A1A1A]">2. Interactive Commercial Truck Route</h2>
         </div>
         <button
@@ -190,7 +190,7 @@ export default function CalculatedMap({ start, pickup, dropoff, itinerary, route
         />
         
         {/* Visual Legends overlay */}
-        <div className="absolute bottom-3 right-3 bg-white px-3 py-2.5 border border-[#1A1A1A] shadow-[3px_3px_0px_#1A1A1A] z-40 text-[9px] uppercase font-bold tracking-wider space-y-1.5 min-w-[155px]">
+        <div className="absolute bottom-3 right-3 bg-white px-3 py-2.5 border border-[#1A1A1A] shadow-[3px_3px_0px_#133658] z-40 text-[9px] uppercase font-bold tracking-wider space-y-1.5 min-w-[155px]">
           <h4 className="font-extrabold text-[#1A1A1A] border-b border-[#1A1A1A]/10 pb-1">Legend Marks:</h4>
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 bg-[#E8E4DF] border border-[#1A1A1A] inline-block shrink-0"></span>
@@ -220,7 +220,7 @@ export default function CalculatedMap({ start, pickup, dropoff, itinerary, route
       </div>
 
       <div className="mt-4 flex items-center gap-2 text-[10px] text-[#1A1A1A]/70 uppercase tracking-wider font-bold bg-[#E8E4DF]/60 p-3 border border-[#1A1A1A]/20">
-        <ShieldCheck className="h-4 w-4 text-[#FD5368] shrink-0" />
+        <ShieldCheck className="h-4 w-4 text-[#1A1A1A] shrink-0" />
         <span>Stops comply with standard FMCSA 11h driving / 14h window rules.</span>
       </div>
     </div>
