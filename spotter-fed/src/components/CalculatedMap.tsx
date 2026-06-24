@@ -7,7 +7,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import { GeocodedLocation, ItineraryItem, DutyStatus } from '../types';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { ShieldCheck, Info, Map as MapIcon, RotateCcw } from 'lucide-react';
+import { Home, Package, Flag, Moon, Coffee, Fuel, RotateCcw, ShieldCheck, Info, Map as MapIcon } from 'lucide-react';
+import { renderToStaticMarkup } from 'react-dom/server';
 
 interface Props {
   start: GeocodedLocation;
@@ -16,6 +17,8 @@ interface Props {
   itinerary: ItineraryItem[];
   routeCoordinates: [number, number][];
 }
+
+const iconSvg = (icon: React.ReactElement) => renderToStaticMarkup(icon);
 
 const US_BOUNDS: L.LatLngBoundsExpression = [
   [24.0, -126.0],
@@ -99,15 +102,15 @@ export default function CalculatedMap({ start, pickup, dropoff, itinerary, route
 
       // 2. Add Primary Milestones Markers
       L.marker([start.lat, start.lng], {
-        icon: createDivIcon('#E8E4DF', 'START', '🏠')
+        icon: createDivIcon('#E8E4DF', 'START', iconSvg(<Home size={14} className="text-[#FD5368]" />))
       }).bindPopup(`<b>Start Base Location</b><br/>${start.label}`).addTo(markerLayer);
 
       L.marker([pickup.lat, pickup.lng], {
-        icon: createDivIcon('#1A1A1A', 'PICKUP', '📦')
+        icon: createDivIcon('#1A1A1A', 'PICKUP', iconSvg(<Package size={14} className="text-[#FD5368]" />))
       }).bindPopup(`<b>Pickup Location (1h Load)</b><br/>${pickup.label}`).addTo(markerLayer);
 
       L.marker([dropoff.lat, dropoff.lng], {
-        icon: createDivIcon('#FF6B00', 'DROPOFF', '🏁')
+        icon: createDivIcon('#7139ea', 'DROPOFF', iconSvg(<Flag size={14} className="text-[#FD5368]" />))
       }).bindPopup(`<b>Final Dropoff (1h Unload)</b><br/>${dropoff.label}`).addTo(markerLayer);
 
       // 3. Add En-Route calculated HOS Stops and Fuel Marks
@@ -122,19 +125,19 @@ export default function CalculatedMap({ start, pickup, dropoff, itinerary, route
 
         if (item.status === DutyStatus.SB && item.activityName.includes("10-Hour")) {
           L.marker([lat, lng], {
-            icon: createDivIcon('#1A1A1A', 'RESET', '💤')
+            icon: createDivIcon('#1A1A1A', 'RESET', iconSvg(<Moon size={14} className="text-[#FD5368]" />))
           }).bindPopup(`<b>HOS Sleep Restart (10 hrs)</b><br/>Location: ${item.locationName}<br/>Start: ${new Date(item.startTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`).addTo(markerLayer);
         } else if (item.status === DutyStatus.OFF && item.activityName.includes("30-Minute")) {
           L.marker([lat, lng], {
-            icon: createDivIcon('#E8E4DF', 'BREAK', '☕')
+            icon: createDivIcon('#E8E4DF', 'BREAK', iconSvg(<Coffee size={14} className="text-[#FD5368]" />))
           }).bindPopup(`<b>Mandatory Rest Break (30 min)</b><br/>Location: ${item.locationName}`).addTo(markerLayer);
         } else if (item.status === DutyStatus.ON && item.activityName.includes("Fueling")) {
           L.marker([lat, lng], {
-            icon: createDivIcon('#FF6B00', 'FUEL', '⛽')
+            icon: createDivIcon('#7139ea', 'FUEL', iconSvg(<Fuel size={14} className="text-[#FD5368]" />))
           }).bindPopup(`<b>Fueling Stop (30 min)</b><br/>Location: ${item.locationName}`).addTo(markerLayer);
         } else if (item.status === DutyStatus.OFF && item.activityName.includes("34-Hour")) {
           L.marker([lat, lng], {
-            icon: createDivIcon('#1A1A1A', 'RESTART', '🔄')
+            icon: createDivIcon('#1A1A1A', 'RESTART', iconSvg(<RotateCcw size={14} className="text-[#FD5368]" />))
           }).bindPopup(`<b>34-Hour Weekly Cycle Reset</b><br/>Location: ${item.locationName}`).addTo(markerLayer);
         }
       });
@@ -201,7 +204,7 @@ export default function CalculatedMap({ start, pickup, dropoff, itinerary, route
             <span className="text-[#1A1A1A] opacity-75">Cargo Pickup (1h)</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 bg-[#FF6B00] border border-[#1A1A1A] inline-block shrink-0"></span>
+            <span className="w-2.5 h-2.5 bg-[#7139ea] border border-[#1A1A1A] inline-block shrink-0"></span>
             <span className="text-[#1A1A1A] opacity-75">Cargo Dropoff</span>
           </div>
           <div className="flex items-center gap-2">
@@ -213,7 +216,7 @@ export default function CalculatedMap({ start, pickup, dropoff, itinerary, route
             <span className="text-[#1A1A1A] opacity-75">30m Rest Break</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 bg-[#FF6B00] border border-[#1A1A1A] inline-block shrink-0"></span>
+            <span className="w-2.5 h-2.5 bg-[#7139ea] border border-[#1A1A1A] inline-block shrink-0"></span>
             <span className="text-[#1A1A1A] opacity-75">Fueling stops</span>
           </div>
         </div>
