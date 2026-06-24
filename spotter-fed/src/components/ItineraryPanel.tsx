@@ -22,28 +22,28 @@ const getStatusBadge = (status: DutyStatus) => {
     case DutyStatus.D:
       return <span className="border border-[#1A1A1A] bg-[#1A1A1A] text-[#FFFFFF] font-extrabold text-[9px] tracking-wider px-1.5 py-0.5 rounded-none">DRIVING</span>;
     case DutyStatus.ON:
-      return <span className="border border-[#1A1A1A] bg-[#FF6B00] text-white font-extrabold text-[9px] tracking-wider px-1.5 py-0.5 rounded-none">ON DUTY</span>;
+      return <span className="border border-[#1A1A1A] bg-[#FD5368] text-white font-extrabold text-[9px] tracking-wider px-1.5 py-0.5 rounded-none">ON DUTY</span>;
   }
 };
 
 const getEventIcon = (status: DutyStatus, name: string) => {
   const norm = name.toLowerCase();
   if (norm.includes("inspect") || norm.includes("pre-trip") || norm.includes("inspec")) {
-    return <ClipboardCheck className="h-4 w-4 text-[#1A1A1A]" />;
+    return <ClipboardCheck className="h-4 w-4 text-[#FD5368]" />;
   }
   if (norm.includes("fuel")) {
     return <Fuel className="h-4 w-4 text-[#FF6B00]" />;
   }
   if (norm.includes("30-min") || norm.includes("break") || norm.includes("rest")) {
-    return <Coffee className="h-4 w-4 text-[#1A1A1A]" />;
+    return <Coffee className="h-4 w-4 text-[#FD5368]" />;
   }
   if (norm.includes("reset") || norm.includes("10-hour") || status === DutyStatus.SB) {
-    return <Moon className="h-4 w-4 text-[#1A1A1A]" />;
+    return <Moon className="h-4 w-4 text-[#FD5368]" />;
   }
   if (status === DutyStatus.D) {
-    return <Navigation className="h-4 w-4 text-[#1A1A1A]" />;
+    return <Navigation className="h-4 w-4 text-[#FD5368]" />;
   }
-  return <Compass className="h-4 w-4 text-[#1A1A1A]" />;
+  return <Compass className="h-4 w-4 text-[#FD5368]" />;
 };
 
 export default function ItineraryPanel({ itinerary, totalDistance, totalDurationHours }: Props) {
@@ -52,7 +52,7 @@ export default function ItineraryPanel({ itinerary, totalDistance, totalDuration
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b-2 border-[#1A1A1A] pb-4 mb-4">
         <div>
           <h2 className="text-xs font-bold uppercase tracking-widest text-[#1A1A1A] flex items-center gap-2">
-            <Clock className="h-5 w-5 text-[#1A1A1A]" />
+            <Clock className="h-5 w-5 text-[#FD5368]" />
             3. Chronological Dispatch Itinerary
           </h2>
           <p className="text-[10px] uppercase font-bold text-[#1A1A1A]/60 mt-1">Calculated timeline for commercial driving log</p>
@@ -65,7 +65,7 @@ export default function ItineraryPanel({ itinerary, totalDistance, totalDuration
           </div>
           <div className="w-px h-3 bg-[#1A1A1A]/20"></div>
           <div>
-            DRIVE EST: <span className="text-[#FF6B00]">{totalDurationHours} hrs</span>
+            DRIVE EST: <span className="text-[#FD5368]">{totalDurationHours} hrs</span>
           </div>
         </div>
       </div>

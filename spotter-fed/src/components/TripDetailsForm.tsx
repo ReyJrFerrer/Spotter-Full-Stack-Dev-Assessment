@@ -62,7 +62,7 @@ export default function TripDetailsForm({ onSubmit, isLoading }: Props) {
   return (
     <div id="trip-input-dashboard" className="bg-white border-2 border-[#1A1A1A] p-6 shadow-[6px_6px_0px_#1A1A1A] transition-all">
       <div className="flex items-center gap-2 mb-6 border-b-2 border-[#1A1A1A] pb-4">
-        <Truck className="h-5 w-5 text-[#1A1A1A]" />
+        <Truck className="h-5 w-5 text-[#FD5368]" />
         <h2 className="text-sm font-bold uppercase tracking-widest text-[#1A1A1A]">1. Dispatch Parameters & HOS Setup</h2>
       </div>
 
@@ -89,7 +89,7 @@ export default function TripDetailsForm({ onSubmit, isLoading }: Props) {
           <LocationAutocomplete
             id="input-current-loc"
             label="Current Base Location"
-            icon={<Compass className="h-4 w-4 text-[#1A1A1A]" />}
+            icon={<Compass className="h-4 w-4 text-[#FD5368]" />}
             value={currentLocation}
             onChange={setCurrentLocation}
             placeholder="City, State (e.g. Los Angeles, CA)"
@@ -104,7 +104,7 @@ export default function TripDetailsForm({ onSubmit, isLoading }: Props) {
             </label>
             <div className="relative">
               <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Clock className="h-4 w-4 text-[#1A1A1A]/60" />
+                <Clock className="h-4 w-4 text-[#FD5368]" />
               </span>
               <input
                 id="input-cycle-used"
@@ -127,7 +127,7 @@ export default function TripDetailsForm({ onSubmit, isLoading }: Props) {
           <LocationAutocomplete
             id="input-pickup-loc"
             label="Pickup Point"
-            icon={<MapPin className="h-4 w-4 text-[#FF6B00]" />}
+            icon={<MapPin className="h-4 w-4 text-[#FD5368]" />}
             value={pickupLocation}
             onChange={setPickupLocation}
             placeholder="City, State (e.g. Las Vegas, NV)"
@@ -139,7 +139,7 @@ export default function TripDetailsForm({ onSubmit, isLoading }: Props) {
           <LocationAutocomplete
             id="input-dropoff-loc"
             label="Drop-off Point"
-            icon={<MapPin className="h-4 w-4 text-[#1A1A1A]" />}
+            icon={<MapPin className="h-4 w-4 text-[#FD5368]" />}
             value={dropoffLocation}
             onChange={setDropoffLocation}
             placeholder="City, State (e.g. Salt Lake City, UT)"
@@ -189,7 +189,7 @@ export default function TripDetailsForm({ onSubmit, isLoading }: Props) {
 
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-t-2 border-[#1A1A1A] pt-5">
           <div className="flex items-center gap-2">
-            <Calendar className="h-4 w-4 text-[#1A1A1A]" />
+            <Calendar className="h-4 w-4 text-[#FD5368]" />
             <input
               id="input-start-date"
               type="datetime-local"
@@ -204,7 +204,7 @@ export default function TripDetailsForm({ onSubmit, isLoading }: Props) {
             id="btn-dispatch-route"
             type="submit"
             disabled={isLoading}
-            className="w-full md:w-auto bg-[#1A1A1A] hover:bg-black text-white font-bold uppercase tracking-widest text-xs py-3.5 px-6 border border-[#1A1A1A] hover:border-black transition-all shadow-[4px_4px_0px_#FF6B00] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] duration-150 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full md:w-auto bg-[#1A1A1A] hover:bg-black text-white font-bold uppercase tracking-widest text-xs py-3.5 px-6 border border-[#1A1A1A] hover:border-black transition-all shadow-[4px_4px_0px_#FD5368] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] duration-150 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? (
               <>

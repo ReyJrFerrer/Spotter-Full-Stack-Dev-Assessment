@@ -5,16 +5,24 @@
 
 import React, { useState } from 'react';
 import { DailyLogSheet, DutyStatus } from '../types';
-import { FileText, Calendar, Truck, UserCheck, ShieldCheck, Printer, ArrowRight, ArrowLeft, Send } from 'lucide-react';
+import { FileText, Calendar, Truck, ShieldCheck, ArrowRight, ArrowLeft, Download, AlertCircle } from 'lucide-react';
 
 interface Props {
   dailyLogs: DailyLogSheet[];
+  tripContext?: {
+    currentLabel: string;
+    pickupLabel: string;
+    dropoffLabel: string;
+    totalDistanceMiles: number;
+    totalDurationHours: number;
+    currentCycleUsedHrs: number;
+  };
 }
 
-export default function EldLogSheets({ dailyLogs }: Props) {
+export default function EldLogSheets({ dailyLogs, tripContext }: Props) {
   const [activeDateIndex, setActiveDateIndex] = useState(0);
   const [isExporting, setIsExporting] = useState(false);
-  const [exportMessage, setExportMessage] = useState<string | null>(null);
+  const [exportError, setExportError] = useState<string | null>(null);
 
   if (!dailyLogs || dailyLogs.length === 0) {
     return (
@@ -57,13 +65,82 @@ export default function EldLogSheets({ dailyLogs }: Props) {
     }
   };
 
-  const handleExportDot = () => {
+  const handleExportPdf = async () => {
     setIsExporting(true);
-    setExportMessage(null);
-    setTimeout(() => {
+    setExportError(null);
+
+    const summary = {
+      from_label: tripContext?.currentLabel ?? "—",
+      pickup_label: tripContext?.pickupLabel ?? "—",
+      dropoff_label: tripContext?.dropoffLabel ?? "—",
+      total_distance_miles: tripContext?.totalDistanceMiles ?? 0,
+      total_duration_hours: tripContext?.totalDurationHours ?? 0,
+      current_cycle_used_hrs: tripContext?.currentCycleUsedHrs ?? 0,
+      trip_days: dailyLogs.length,
+      carrier_name: activeLog.carrierName ?? "",
+      tractor_number: activeLog.tractorNumber ?? "",
+      trailer_number: activeLog.trailerNumber ?? "",
+    };
+
+    const payload = {
+      summary,
+      daily_logs: dailyLogs.map((log) => ({
+        date_string: log.dateString,
+        date_label: log.dateLabel,
+        total_miles_driven: log.totalMilesDriven,
+        tractor_number: log.tractorNumber,
+        trailer_number: log.trailerNumber,
+        carrier_name: log.carrierName,
+        timeline: log.timeline.map((b) => ({
+          status: b.status,
+          start_hour: b.startHour,
+          end_hour: b.endHour,
+          location_name: b.locationName,
+          remarks: b.remarks ?? "",
+        })),
+        totals: log.totals,
+        remarks: log.remarks.map((r) => ({
+          time_label: r.timeLabel,
+          status: r.status,
+          location: r.location,
+          remarks_text: r.remarksText,
+        })),
+      })),
+    };
+
+    const API_BASE = (import.meta.env.VITE_API_URL || '').replace(/\/+$/, '');
+
+    try {
+      const response = await fetch(`${API_BASE}/api/trips/export-pdf/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        let detail = `Server returned ${response.status}`;
+        try {
+          const err = await response.json();
+          detail = err.error || err.detail || JSON.stringify(err);
+        } catch { /* ignore parse errors */ }
+        throw new Error(detail);
+      }
+
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      const filename = `eld-logs-${activeLog.dateString}.pdf`;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (err: any) {
+      setExportError(err?.message || "Failed to generate PDF. Ensure the dispatch server is reachable.");
+    } finally {
       setIsExporting(false);
-      setExportMessage(`SUCCESS: Automated ELD log dataset for date ${activeLog.dateString} successfully encrypted and transmitted via E-DOT Web Services to FMCSA portal (Inspection ID: inspect-2026-hos-4198).`);
-    }, 1500);
+    }
   };
 
   return (
@@ -376,28 +453,28 @@ export default function EldLogSheets({ dailyLogs }: Props) {
           <div>
             <h4 className="text-[11px] font-extrabold uppercase tracking-widest text-[#1A1A1A]">Digital ELD Self-Certification</h4>
             <p className="text-[11px] text-slate-600 mt-1">
-              This digital dashboard implements calculations in compliance with the Federal Motor Carrier Safety Regulations (49 CFR Parts 395).
+              This digital dashboard implements calculations in compliance with the Federal Motor Carrier Safety Regulations (49 CFR Parts 395). Export to PDF for printing, archiving, or roadside inspection handoff.
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
           <button
-            id="btn-eld-dot-transfer"
-            onClick={handleExportDot}
+            id="btn-eld-pdf-export"
+            onClick={handleExportPdf}
             disabled={isExporting}
             className="bg-[#1A1A1A] hover:bg-black disabled:bg-slate-300 text-white text-xs font-bold uppercase tracking-widest border border-[#1A1A1A] px-5 py-3 rounded-none flex items-center gap-1.5 active:scale-95 transition-all shadow-[3px_3px_0px_#FF6B00] hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px] cursor-pointer"
           >
-            <Send className="h-3.5 w-3.5" />
-            {isExporting ? "SENDING..." : "SUBMIT TO DOT PORTAL"}
+            <Download className="h-3.5 w-3.5" />
+            {isExporting ? "GENERATING PDF..." : "EXPORT PDF"}
           </button>
         </div>
       </div>
 
-      {exportMessage && (
-        <div className="mt-4 bg-[#1A1A1A] text-[#F4F1ED] border border-[#1A1A1A] text-[10px] p-4 rounded-none font-mono leading-relaxed shadow-[4px_4px_0px_#FF6B00] flex items-start gap-2 transition-opacity">
-          <span className="text-emerald-400 font-bold">●</span>
-          <span>{exportMessage}</span>
+      {exportError && (
+        <div className="mt-4 bg-red-50 border-2 border-red-900 text-red-900 text-[11px] p-4 rounded-none font-mono leading-relaxed shadow-[4px_4px_0px_#7f1d1d] flex items-start gap-2">
+          <AlertCircle className="h-4 w-4 text-red-700 shrink-0 mt-0.5" />
+          <span><b>PDF export failed:</b> {exportError}</span>
         </div>
       )}
     </div>

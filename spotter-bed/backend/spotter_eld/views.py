@@ -1,12 +1,14 @@
 from datetime import datetime, timezone
 
+from django.http import HttpResponse
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 
-from spotter_eld.serializers import TripInputSerializer
+from spotter_eld.serializers import TripInputSerializer, PdfExportRequestSerializer
 from spotter_eld.geocoding import geocode_location, nominatim_autocomplete, osrm_route
 from spotter_eld.hos_engine import simulate_trip
+from spotter_eld.pdf_export import build_eld_pdf
 
 
 class HealthView(APIView):
@@ -63,6 +65,34 @@ class TripGenerateView(APIView):
         )
 
         return Response(_serialize_result(result, route_geometry))
+
+
+class TripPdfExportView(APIView):
+    """Generate a multi-page PDF containing trip summary, daily log sheets, and a recap."""
+
+    authentication_classes = []
+    permission_classes = []
+
+    def post(self, request):
+        serializer = PdfExportRequestSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            pdf_bytes = build_eld_pdf(serializer.validated_data)
+        except ValueError as exc:
+            return Response(
+                {"error": str(exc)},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        response = HttpResponse(pdf_bytes, content_type="application/pdf")
+        filename = "eld-daily-logs.pdf"
+        first_log = serializer.validated_data["daily_logs"][0]
+        if first_log.get("date_string"):
+            filename = f"eld-logs-{first_log['date_string']}.pdf"
+        response["Content-Disposition"] = f'attachment; filename="{filename}"'
+        return response
 
 
 def _serialize_result(result, route_geometry=None):

@@ -16,6 +16,7 @@ export default function App() {
   const [result, setResult] = useState<TripGenerationResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [lastCycleUsed, setLastCycleUsed] = useState<number>(0);
 
   // Trigger an initial automatic calculation on mount to show beautiful default data
   useEffect(() => {
@@ -65,6 +66,7 @@ export default function App() {
         inputs.trailerNumber
       );
       setResult(merged);
+      setLastCycleUsed(inputs.currentCycleUsed);
     } catch (err: any) {
       console.error(err);
       setErrorMsg(err.message || "Network error trying to connect to dispatch server. Please ensure the backend server is running.");
@@ -133,7 +135,17 @@ export default function App() {
             </div>
 
             {/* Bottom Row: ELD Logs — full width */}
-            <EldLogSheets dailyLogs={result.dailyLogs} />
+            <EldLogSheets
+              dailyLogs={result.dailyLogs}
+              tripContext={{
+                currentLabel: result.current.label,
+                pickupLabel: result.pickup.label,
+                dropoffLabel: result.dropoff.label,
+                totalDistanceMiles: result.totalDistanceMiles,
+                totalDurationHours: result.totalDurationHours,
+                currentCycleUsedHrs: lastCycleUsed,
+              }}
+            />
           </div>
         ) : (
           <div className="text-center py-20 bg-white border border-[#1A1A1A] hover:shadow-none shadow-[4px_4px_0px_#1A1A1A] p-6">
