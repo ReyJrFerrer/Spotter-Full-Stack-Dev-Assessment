@@ -9,6 +9,7 @@ sources:
   - raw/notes/project-codebase-state.md
   - raw/notes/tech-stack-details.md
   - raw/notes/frontend-integration-update.md
+  - raw/notes/map-us-bounds-restriction.md
 ---
 
 # Frontend Components
@@ -34,6 +35,7 @@ sources:
 - Custom HTML div icons for stops (start, pickup, dropoff, resets, breaks, fueling)
 - Legend overlay and recenter button
 - Error handling with recovery UI
+- **US bounds restriction:** `maxBounds` set to CONUS bounding box (`[24,-126]` → `[50,-65]`), `maxBoundsViscosity: 0.15` for soft bounce-back, `minZoom: 3` to prevent zooming too far out
 
 ### ItineraryPanel (`src/components/ItineraryPanel.tsx`)
 - Chronological timeline display with vertical timeline

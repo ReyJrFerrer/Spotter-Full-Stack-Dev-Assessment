@@ -17,6 +17,11 @@ interface Props {
   routeCoordinates: [number, number][];
 }
 
+const US_BOUNDS: L.LatLngBoundsExpression = [
+  [24.0, -126.0],
+  [50.0, -65.0]
+];
+
 const createDivIcon = (color: string, label: string, badgeSvg?: string) => {
   return L.divIcon({
     html: `
@@ -54,7 +59,10 @@ export default function CalculatedMap({ start, pickup, dropoff, itinerary, route
           center: [pickup.lat, pickup.lng],
           zoom: 6,
           zoomControl: true,
-          attributionControl: false
+          attributionControl: false,
+          maxBounds: US_BOUNDS,
+          maxBoundsViscosity: 0.15,
+          minZoom: 3
         });
 
         // Premium Light Desaturated Map Tiles for Editorial Vibe

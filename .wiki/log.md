@@ -44,3 +44,9 @@
 - Created 1 raw note from git commit analysis: deployment-progress-update
 - Updated 2 wiki pages: project-architecture (added Vercel deployment section), backend-django (updated settings/wsgi/urls, deployment artifacts, Python version)
 - Updated _index.md with new source entry and stats (12 raw sources)
+
+## [2026-06-24] edit | Restrict CalculatedMap to US continental bounds
+- Added Leaflet `maxBounds` (CONUS: [24,-126] → [50,-65]), `maxBoundsViscosity: 0.15`, `minZoom: 3` to map initialization options
+- Created raw note: map-us-bounds-restriction
+- Updated frontend-components wiki article with new map constraint details
+- Updated _index.md with new source entry and stats (13 raw sources, 9 wiki articles, 0 uncompiled)
