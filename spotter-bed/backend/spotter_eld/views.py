@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from spotter_eld.serializers import TripInputSerializer
-from spotter_eld.geocoding import geocode_location, osrm_route
+from spotter_eld.geocoding import geocode_location, nominatim_autocomplete, osrm_route
 from spotter_eld.hos_engine import simulate_trip
 
 
@@ -15,6 +15,18 @@ class HealthView(APIView):
 
     def get(self, request):
         return Response({"status": "ok"})
+
+
+class LocationAutocompleteView(APIView):
+    authentication_classes = []
+    permission_classes = []
+
+    def get(self, request):
+        query = request.query_params.get("q", "").strip()
+        if len(query) < 2:
+            return Response([])
+        results = nominatim_autocomplete(query)
+        return Response(results)
 
 
 class TripGenerateView(APIView):
@@ -31,7 +43,7 @@ class TripGenerateView(APIView):
 
         if not current_loc or not pickup_loc or not dropoff_loc:
             return Response(
-                {"error": "Could not geocode one or more locations"},
+                {"error": "US cities and states only"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 

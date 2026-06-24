@@ -52,11 +52,12 @@
 | [[frontend-integration-update\|Frontend Integration Update]] ([raw/notes/frontend-integration-update](../raw/notes/frontend-integration-update.md)) | Note | Frontend refactored: Express removed, Vite proxy to Django, hosSimulator deleted, apiTransform created |
 | [[deployment-progress-update\|Deployment Progress Update]] ([raw/notes/deployment-progress-update](../raw/notes/deployment-progress-update.md)) | Note | Vercel deployment configuration — 7 commits, WSGI module fix, env-driven config, stateless DB, CORS port change |
 | [[map-us-bounds-restriction\|Map US Bounds Restriction]] ([raw/notes/map-us-bounds-restriction](../raw/notes/map-us-bounds-restriction.md)) | Note | Leaflet map restricted to continental US with maxBounds, minZoom, and viscosity |
+| [[nominatim-autocomplete-api\|Nominatim Autocomplete API]] ([raw/notes/nominatim-autocomplete-api](../raw/notes/nominatim-autocomplete-api.md)) | Note | Backend endpoint + frontend component for Nominatim-powered US city autocomplete |
 
 ## Stats
 
 | Area | Count |
 |---|---|
-| Raw sources | 13 |
+| Raw sources | 14 |
 | Wiki articles | 9 |
 | Uncompiled | 0 |

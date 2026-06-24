@@ -1,5 +1,6 @@
 import json
 import re
+import time
 import urllib.request
 import urllib.parse
 import urllib.error
@@ -12,6 +13,26 @@ from spotter_eld.utils import round_to_quarter_hour
 NOMINATIM_URL = "https://nominatim.openstreetmap.org/search"
 OSRM_URL = "https://router.project-osrm.org/route/v1/driving"
 USER_AGENT = "SpotterAssessment/1.0 (trucking-route-planner)"
+
+STATE_ABBREVIATIONS: dict[str, str] = {
+    "alabama": "AL", "alaska": "AK", "arizona": "AZ", "arkansas": "AR",
+    "california": "CA", "colorado": "CO", "connecticut": "CT", "delaware": "DE",
+    "district of columbia": "DC", "florida": "FL", "georgia": "GA", "hawaii": "HI",
+    "idaho": "ID", "illinois": "IL", "indiana": "IN", "iowa": "IA",
+    "kansas": "KS", "kentucky": "KY", "louisiana": "LA", "maine": "ME",
+    "maryland": "MD", "massachusetts": "MA", "michigan": "MI", "minnesota": "MN",
+    "mississippi": "MS", "missouri": "MO", "montana": "MT", "nebraska": "NE",
+    "nevada": "NV", "new hampshire": "NH", "new jersey": "NJ", "new mexico": "NM",
+    "new york": "NY", "north carolina": "NC", "north dakota": "ND", "ohio": "OH",
+    "oklahoma": "OK", "oregon": "OR", "pennsylvania": "PA", "rhode island": "RI",
+    "south carolina": "SC", "south dakota": "SD", "tennessee": "TN", "texas": "TX",
+    "utah": "UT", "vermont": "VT", "virginia": "VA", "washington": "WA",
+    "west virginia": "WV", "wisconsin": "WI", "wyoming": "WY",
+}
+
+
+_AUTOCOMPLETE_CACHE: dict[str, tuple[float, list[dict]]] = {}
+_AUTOCOMPLETE_CACHE_TTL = 300  # 5 minutes
 
 CITY_DATABASE: dict[str, GeocodedLocation] = {
     "los angeles": GeocodedLocation(label="Los Angeles, CA", city="Los Angeles", state="CA", lat=34.0522, lng=-118.2437),
@@ -28,6 +49,9 @@ CITY_DATABASE: dict[str, GeocodedLocation] = {
     "houston": GeocodedLocation(label="Houston, TX", city="Houston", state="TX", lat=29.7604, lng=-95.3698),
     "dallas": GeocodedLocation(label="Dallas, TX", city="Dallas", state="TX", lat=32.7767, lng=-96.7970),
     "chicago": GeocodedLocation(label="Chicago, IL", city="Chicago", state="IL", lat=41.8781, lng=-87.6298),
+    "new york": GeocodedLocation(label="New York, NY", city="New York", state="NY", lat=40.7128, lng=-74.0060),
+    "boston": GeocodedLocation(label="Boston, MA", city="Boston", state="MA", lat=42.3601, lng=-71.0589),
+    "atlanta": GeocodedLocation(label="Atlanta, GA", city="Atlanta", state="GA", lat=33.7490, lng=-84.3880),
 }
 
 
@@ -45,6 +69,91 @@ def _fetch_json(url: str, timeout: int = 10) -> Optional[dict]:
             return json.loads(resp.read().decode("utf-8"))
     except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError, OSError):
         return None
+
+
+def _fetch_json_list(url: str, timeout: int = 10) -> Optional[list]:
+    req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+            return data if isinstance(data, list) else None
+    except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError, OSError):
+        return None
+
+
+def _extract_city(address: dict) -> str:
+    for key in ("city", "town", "village", "hamlet", "municipality", "county"):
+        val = address.get(key)
+        if val:
+            return val
+    return ""
+
+
+def _extract_state_abbr(state_name: str) -> str:
+    key = state_name.strip().lower()
+    return STATE_ABBREVIATIONS.get(key, state_name)
+
+
+def _serialize_autocomplete(result: dict) -> Optional[dict]:
+    if result.get("class") not in ("place", "boundary"):
+        return None
+    place_type = result.get("type", "")
+    if place_type not in ("city", "town", "village", "hamlet", "municipality", "county", "administrative"):
+        return None
+
+    address = result.get("address", {})
+    city_name = _extract_city(address)
+    if not city_name:
+        display_name = result.get("display_name", "")
+        city_name = display_name.split(",")[0].strip()
+        if not city_name:
+            return None
+
+    state_name = address.get("state", "")
+    state_abbr = _extract_state_abbr(state_name) if state_name else ""
+
+    if not state_abbr:
+        return None
+
+    return {
+        "label": f"{city_name}, {state_abbr}",
+        "city": city_name,
+        "state": state_abbr,
+        "lat": float(result.get("lat", 0)),
+        "lng": float(result.get("lon", 0)),
+    }
+
+
+def nominatim_autocomplete(query: str) -> list[dict]:
+    now = time.time()
+    cached = _AUTOCOMPLETE_CACHE.get(query)
+    if cached:
+        timestamp, data = cached
+        if now - timestamp < _AUTOCOMPLETE_CACHE_TTL:
+            return data
+
+    params = urllib.parse.urlencode({
+        "q": query,
+        "format": "json",
+        "addressdetails": 1,
+        "limit": 10,
+        "countrycodes": "us",
+    })
+    url = f"{NOMINATIM_URL}?{params}"
+    raw = _fetch_json_list(url)
+    if not raw:
+        return []
+
+    results: list[dict] = []
+    seen = set()
+    for item in raw:
+        serialized = _serialize_autocomplete(item)
+        if serialized and serialized["label"] not in seen:
+            seen.add(serialized["label"])
+            results.append(serialized)
+
+    _AUTOCOMPLETE_CACHE[query] = (now, results)
+    return results
 
 
 def nominatim_geocode(location_str: str) -> Optional[GeocodedLocation]:

@@ -10,6 +10,7 @@ sources:
   - raw/notes/tech-stack-details.md
   - raw/notes/frontend-integration-update.md
   - raw/notes/map-us-bounds-restriction.md
+  - raw/notes/nominatim-autocomplete-api.md
 ---
 
 # Frontend Components
@@ -24,7 +25,7 @@ sources:
 ## Components
 
 ### TripDetailsForm (`src/components/TripDetailsForm.tsx`)
-- Input form with 4 required fields (current location, pickup, dropoff, cycle hours)
+- Input form with 3 location autocompletes (current, pickup, dropoff) backed by Nominatim API, plus cycle hours
 - Plus optional: carrier name, tractor#, trailer#, start time
 - 3 preset route buttons (LA→Vegas, Midwest, East Coast)
 - Handles form submission via `onSubmit` callback
@@ -36,6 +37,13 @@ sources:
 - Legend overlay and recenter button
 - Error handling with recovery UI
 - **US bounds restriction:** `maxBounds` set to CONUS bounding box (`[24,-126]` → `[50,-65]`), `maxBoundsViscosity: 0.15` for soft bounce-back, `minZoom: 3` to prevent zooming too far out
+
+### LocationAutocomplete (`src/components/LocationAutocomplete.tsx`)
+- Reusable searchable autocomplete for US city, state inputs
+- **Empty/focused state:** shows scrollable static list of ~100 capitals + top metros for instant browsing
+- **Typing 2+ chars:** calls backend `GET /api/locations/autocomplete/?q=...` with 300ms debounce, showing Nominatim results
+- Keyboard navigation (arrow keys, enter, escape)
+- Loading spinner, empty state, and error state
 
 ### ItineraryPanel (`src/components/ItineraryPanel.tsx`)
 - Chronological timeline display with vertical timeline

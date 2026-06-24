@@ -6,6 +6,8 @@
 import React, { useState } from 'react';
 import { TripInputs } from '../types';
 import { MapPin, Truck, Compass, Calendar, Clock, RotateCcw } from 'lucide-react';
+import LocationAutocomplete from './LocationAutocomplete';
+import { US_CITIES } from '../constants/usCities';
 
 interface Props {
   onSubmit: (inputs: TripInputs) => void;
@@ -17,6 +19,8 @@ const PRESET_TRIPS = [
   { name: "Midwest Route", curr: "Chicago, IL", pick: "Denver, CO", drop: "Dallas, TX" },
   { name: "East Coast Carrier", curr: "Boston, MA", pick: "New York, NY", drop: "Atlanta, GA" }
 ];
+
+const AUTOCOMPLETE_URL = `${(import.meta.env.VITE_API_URL || '').replace(/\/+$/, '')}/api/locations/autocomplete/`;
 
 export default function TripDetailsForm({ onSubmit, isLoading }: Props) {
   const [currentLocation, setCurrentLocation] = useState('Los Angeles, CA');
@@ -82,25 +86,16 @@ export default function TripDetailsForm({ onSubmit, isLoading }: Props) {
       <form onSubmit={handleFormSubmit} className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Current Location */}
-          <div className="relative">
-            <label htmlFor="input-current-loc" className="text-[10px] font-bold text-[#1A1A1A] uppercase tracking-widest block mb-1">
-              Current Base Location
-            </label>
-            <div className="relative">
-              <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Compass className="h-4 w-4 text-[#1A1A1A]" />
-              </span>
-              <input
-                id="input-current-loc"
-                type="text"
-                required
-                value={currentLocation}
-                onChange={(e) => setCurrentLocation(e.target.value)}
-                placeholder="City, State (e.g. Los Angeles, CA)"
-                className="w-full pl-10 pr-3 py-2.5 text-sm bg-[#F4F1ED]/40 hover:bg-[#F4F1ED]/65 focus:bg-white border border-[#1A1A1A] text-[#1A1A1A] font-medium rounded-none outline-none transition-all focus:ring-1 focus:ring-[#1A1A1A]"
-              />
-            </div>
-          </div>
+          <LocationAutocomplete
+            id="input-current-loc"
+            label="Current Base Location"
+            icon={<Compass className="h-4 w-4 text-[#1A1A1A]" />}
+            value={currentLocation}
+            onChange={setCurrentLocation}
+            placeholder="City, State (e.g. Los Angeles, CA)"
+            apiUrl={AUTOCOMPLETE_URL}
+            staticOptions={US_CITIES}
+          />
 
           {/* Current Cycle Hours */}
           <div>
@@ -129,42 +124,28 @@ export default function TripDetailsForm({ onSubmit, isLoading }: Props) {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Pickup Location */}
-          <div>
-            <label htmlFor="input-pickup-loc" className="text-[10px] font-bold text-[#1A1A1A] uppercase tracking-widest block mb-1">Pickup Point</label>
-            <div className="relative">
-              <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <MapPin className="h-4 w-4 text-[#FF6B00]" />
-              </span>
-              <input
-                id="input-pickup-loc"
-                type="text"
-                required
-                value={pickupLocation}
-                onChange={(e) => setPickupLocation(e.target.value)}
-                placeholder="City, State (e.g. Las Vegas, NV)"
-                className="w-full pl-10 pr-3 py-2.5 text-sm bg-[#F4F1ED]/40 hover:bg-[#F4F1ED]/65 focus:bg-white border border-[#1A1A1A] text-[#1A1A1A] font-medium rounded-none outline-none transition-all focus:ring-1 focus:ring-[#1A1A1A]"
-              />
-            </div>
-          </div>
+          <LocationAutocomplete
+            id="input-pickup-loc"
+            label="Pickup Point"
+            icon={<MapPin className="h-4 w-4 text-[#FF6B00]" />}
+            value={pickupLocation}
+            onChange={setPickupLocation}
+            placeholder="City, State (e.g. Las Vegas, NV)"
+            apiUrl={AUTOCOMPLETE_URL}
+            staticOptions={US_CITIES}
+          />
 
           {/* Dropoff Location */}
-          <div>
-            <label htmlFor="input-dropoff-loc" className="text-[10px] font-bold text-[#1A1A1A] uppercase tracking-widest block mb-1">Drop-off Point</label>
-            <div className="relative">
-              <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <MapPin className="h-4 w-4 text-[#1A1A1A]" />
-              </span>
-              <input
-                id="input-dropoff-loc"
-                type="text"
-                required
-                value={dropoffLocation}
-                onChange={(e) => setDropoffLocation(e.target.value)}
-                placeholder="City, State (e.g. Salt Lake City, UT)"
-                className="w-full pl-10 pr-3 py-2.5 text-sm bg-[#F4F1ED]/40 hover:bg-[#F4F1ED]/65 focus:bg-white border border-[#1A1A1A] text-[#1A1A1A] font-medium rounded-none outline-none transition-all focus:ring-1 focus:ring-[#1A1A1A]"
-              />
-            </div>
-          </div>
+          <LocationAutocomplete
+            id="input-dropoff-loc"
+            label="Drop-off Point"
+            icon={<MapPin className="h-4 w-4 text-[#1A1A1A]" />}
+            value={dropoffLocation}
+            onChange={setDropoffLocation}
+            placeholder="City, State (e.g. Salt Lake City, UT)"
+            apiUrl={AUTOCOMPLETE_URL}
+            staticOptions={US_CITIES}
+          />
         </div>
 
         {/* Departure Details */}

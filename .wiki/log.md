@@ -50,3 +50,18 @@
 - Created raw note: map-us-bounds-restriction
 - Updated frontend-components wiki article with new map constraint details
 - Updated _index.md with new source entry and stats (13 raw sources, 9 wiki articles, 0 uncompiled)
+
+## [2026-06-24] edit | Nominatim autocomplete API + LocationAutocomplete component
+- Backend: Added `nominatim_autocomplete()` with 300s TTL cache in geocoding.py, `LocationAutocompleteView` in views.py, new URL
+- Frontend: Rewrote LocationAutocomplete to call backend API with 300ms debounce; removed static US_CITIES constant
+- Changed backend error message "Could not geocode one or more locations" → "US cities and states only"
+- Added Boston, NY, Atlanta to backend CITY_DATABASE
+- Created raw note: nominatim-autocomplete-api
+- Updated frontend-components, api-specification wiki articles
+- Updated _index.md with new source entry and stats (14 raw sources, 9 wiki articles, 0 uncompiled)
+
+## [2026-06-24] edit | Added scrollable static city list on autocomplete focus
+- Recreated `usCities.ts` with 50 state capitals + top metros (~100 entries)
+- Updated LocationAutocomplete to show `staticOptions` scrollable list when input is empty + focused
+- When user types 2+ chars, switches to API-driven Nominatim results
+- Updated frontend-components wiki article

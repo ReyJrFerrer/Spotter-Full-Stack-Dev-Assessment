@@ -23,6 +23,18 @@ sources:
 { "status": "ok" }
 ```
 
+### `GET /api/locations/autocomplete/?q=los`
+
+**Response:**
+```json
+[
+  {"label": "Los Angeles, CA", "city": "Los Angeles", "state": "CA", "lat": 34.0522, "lng": -118.2437},
+  {"label": "Los Gatos, CA", "city": "Los Gatos", "state": "CA", "lat": 37.2266, "lng": -121.9747}
+]
+```
+
+Returns up to 10 US city suggestions from Nominatim search (filtered to `countrycodes=us` and place types: city, town, village, hamlet, municipality, county). Results are TTL-cached (5 min) on the backend to respect Nominatim's 1 req/sec rate limit. Requires minimum 2 characters in `q`.
+
 ### `POST /api/trips/generate/`
 
 **Request body:**

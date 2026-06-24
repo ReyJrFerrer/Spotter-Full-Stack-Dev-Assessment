@@ -1,7 +1,7 @@
 from django.http import JsonResponse
 from django.urls import path
 
-from spotter_eld.views import HealthView, TripGenerateView
+from spotter_eld.views import HealthView, LocationAutocompleteView, TripGenerateView
 
 def api_root(request):
     return JsonResponse({
@@ -9,7 +9,8 @@ def api_root(request):
         "status": "running",
         "endpoints": {
             "health": "/api/health/",
-            "generate": "/api/trips/generate/"
+            "generate": "/api/trips/generate/",
+            "autocomplete": "/api/locations/autocomplete/?q=city"
         }
     })
 
@@ -17,4 +18,5 @@ urlpatterns = [
     path("", api_root, name="api-root"),
     path("api/health/", HealthView.as_view(), name="api-health"),
     path("api/trips/generate/", TripGenerateView.as_view(), name="api-trips-generate"),
+    path("api/locations/autocomplete/", LocationAutocompleteView.as_view(), name="api-locations-autocomplete"),
 ]
