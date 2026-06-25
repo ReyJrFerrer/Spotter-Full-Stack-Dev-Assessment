@@ -11,15 +11,46 @@ import CalculatedMap from './components/CalculatedMap';
 import ItineraryPanel from './components/ItineraryPanel';
 import EldLogSheets from './components/EldLogSheets';
 import { ShieldCheck, Compass, AlertCircle } from 'lucide-react';
+import logoSvg from '/Logo.svg'
+
+function detectTimezone(): string {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+  } catch {
+    return "UTC";
+  }
+}
+
+function todayInTimezone(timezone: string): string {
+  try {
+    const parts = new Intl.DateTimeFormat('en-CA', {
+      timeZone: timezone,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    }).formatToParts(new Date());
+    const get = (type: string) =>
+      parts.find((p) => p.type === type)?.value ?? '00';
+    return `${get('year')}-${get('month')}-${get('day')}`;
+  } catch {
+    const d = new Date();
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${dd}`;
+  }
+}
 
 export default function App() {
   const [result, setResult] = useState<TripGenerationResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [lastCycleUsed, setLastCycleUsed] = useState<number>(0);
+  const [tripTimezone, setTripTimezone] = useState<string>(() => detectTimezone());
 
   // Trigger an initial automatic calculation on mount to show beautiful default data
   useEffect(() => {
+    const naiveIso = `${todayInTimezone(tripTimezone)}T06:00:00`;
     handleCalculate({
       currentLocation: 'Los Angeles, CA',
       pickupLocation: 'Las Vegas, NV',
@@ -28,8 +59,10 @@ export default function App() {
       carrierName: 'Swift Logistical Transit Group',
       tractorNumber: 'TRK-9801C',
       trailerNumber: 'TRL-552A',
-      startTime: new Date().toISOString()
+      startTime: naiveIso,
+      timezone: tripTimezone,
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const API_BASE = (import.meta.env.VITE_API_URL || '').replace(/\/+$/, '');
@@ -38,6 +71,7 @@ export default function App() {
     setIsLoading(true);
     setErrorMsg(null);
     try {
+      const tz = inputs.timezone || detectTimezone();
       const response = await fetch(`${API_BASE}/api/trips/generate/`, {
         method: 'POST',
         headers: {
@@ -48,6 +82,8 @@ export default function App() {
           pickup_location: inputs.pickupLocation,
           dropoff_location: inputs.dropoffLocation,
           current_cycle_used_hrs: inputs.currentCycleUsed,
+          start_time: inputs.startTime,
+          timezone: tz,
         }),
       });
 
@@ -67,6 +103,7 @@ export default function App() {
       );
       setResult(merged);
       setLastCycleUsed(inputs.currentCycleUsed);
+      setTripTimezone(merged.timezone);
     } catch (err: any) {
       console.error(err);
       setErrorMsg(err.message || "Network error trying to connect to dispatch server. Please ensure the backend server is running.");
@@ -83,6 +120,7 @@ export default function App() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row md:items-baseline md:justify-between gap-4">
           <div>
             <h1 className="text-4xl md:text-4xl font-serif italic font-black  text-[#FD5368] tracking-tighter">
+              <img src={logoSvg} alt="Logo" className="inline-block h-8 w-auto mr-2 -mt-1" /> 
               <span style={{ textShadow: '6px -4px 0px #F4F1ED' }}>
                 ELD.01
               </span>
@@ -133,6 +171,7 @@ export default function App() {
                   itinerary={result.itinerary}
                   totalDistance={result.totalDistanceMiles}
                   totalDurationHours={result.totalDurationHours}
+                  tripTimezone={result.timezone}
                 />
               </div>
             </div>
@@ -147,6 +186,7 @@ export default function App() {
                 totalDistanceMiles: result.totalDistanceMiles,
                 totalDurationHours: result.totalDurationHours,
                 currentCycleUsedHrs: lastCycleUsed,
+                tripTimezone: result.timezone,
               }}
             />
           </div>

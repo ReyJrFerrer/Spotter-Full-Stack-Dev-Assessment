@@ -5,7 +5,7 @@
 
 import React, { useState } from 'react';
 import { DailyLogSheet, DutyStatus } from '../types';
-import { FileText, Calendar, Truck, ShieldCheck, ArrowRight, ArrowLeft, Download, AlertCircle } from 'lucide-react';
+import { FileText, Calendar, Truck, ShieldCheck, ArrowRight, ArrowLeft, Download, AlertCircle, Globe2 } from 'lucide-react';
 
 interface Props {
   dailyLogs: DailyLogSheet[];
@@ -16,6 +16,7 @@ interface Props {
     totalDistanceMiles: number;
     totalDurationHours: number;
     currentCycleUsedHrs: number;
+    tripTimezone: string;
   };
 }
 
@@ -207,6 +208,10 @@ export default function EldLogSheets({ dailyLogs, tripContext }: Props) {
               {activeLog.totalMilesDriven} mi
             </span>
           </div>
+        </div>
+        <div className="mt-3 pt-3 border-t border-[#1A1A1A]/20 flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-widest text-[#1A1A1A]/70">
+          <Globe2 className="h-3 w-3 text-[#FD5368]" />
+          All grid hours shown in {activeLog.timezone || tripContext?.tripTimezone || "UTC"} local time
         </div>
       </div>
 

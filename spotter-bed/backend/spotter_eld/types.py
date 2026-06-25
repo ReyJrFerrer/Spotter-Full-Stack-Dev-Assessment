@@ -68,6 +68,7 @@ class DailyLogSheet:
     timeline: List[TimelineBlock]
     totals: dict
     remarks: List[DailyLogRemarks]
+    timezone: str = "UTC"
 
 
 @dataclass
@@ -80,3 +81,4 @@ class TripGenerationResult:
     total_duration_hours: float
     itinerary: List[ItineraryItem]
     daily_logs: List[DailyLogSheet]
+    timezone: str = "UTC"

@@ -1,12 +1,32 @@
 from datetime import datetime, timezone
 from typing import List, Tuple
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 
 def round_to_quarter_hour(hours: float) -> float:
     return round(hours * 4) / 4
 
 
-def format_time_label(dt: datetime) -> str:
+def resolve_timezone(tz_name: str | None) -> ZoneInfo:
+    """Resolve an IANA timezone name to a ZoneInfo, defaulting to UTC."""
+    if not tz_name:
+        return ZoneInfo("UTC")
+    try:
+        return ZoneInfo(tz_name)
+    except ZoneInfoNotFoundError:
+        return ZoneInfo("UTC")
+
+
+def to_local(dt: datetime, tz: ZoneInfo) -> datetime:
+    """Convert an aware datetime to the target local zone, defaulting to UTC if naive."""
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=ZoneInfo("UTC"))
+    return dt.astimezone(tz)
+
+
+def format_time_label(dt: datetime, tz: ZoneInfo | None = None) -> str:
+    if tz is not None:
+        dt = to_local(dt, tz)
     hh = dt.hour
     mm = dt.minute
     ampm = "PM" if hh >= 12 else "AM"
@@ -16,13 +36,17 @@ def format_time_label(dt: datetime) -> str:
     return f"{hh12}:{mm:02d} {ampm}"
 
 
-def format_date_label(dt: datetime) -> str:
+def format_date_label(dt: datetime, tz: ZoneInfo | None = None) -> str:
+    if tz is not None:
+        dt = to_local(dt, tz)
     days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
     months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
     return f"{days[dt.weekday()]}, {months[dt.month - 1]} {dt.day}, {dt.year}"
 
 
-def format_date_string(dt: datetime) -> str:
+def format_date_string(dt: datetime, tz: ZoneInfo | None = None) -> str:
+    if tz is not None:
+        dt = to_local(dt, tz)
     return f"{dt.year:04d}-{dt.month:02d}-{dt.day:02d}"
 
 

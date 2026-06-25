@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
 
 from django.http import HttpResponse
 from rest_framework.views import APIView
@@ -9,7 +10,7 @@ from spotter_eld.serializers import TripInputSerializer, PdfExportRequestSeriali
 from spotter_eld.geocoding import geocode_location, nominatim_autocomplete, osrm_route
 from spotter_eld.hos_engine import simulate_trip
 from spotter_eld.pdf_export import build_eld_pdf
-from spotter_eld.utils import snap_point_to_polyline
+from spotter_eld.utils import snap_point_to_polyline, resolve_timezone, to_local
 
 
 class HealthView(APIView):
@@ -56,20 +57,32 @@ class TripGenerateView(APIView):
         if osrm_result is not None:
             osrm_legs, route_geometry = osrm_result
 
+        trip_timezone = data.get("timezone") or "UTC"
+        tz = resolve_timezone(trip_timezone)
+
+        start_time_iso = data.get("start_time")
+        if start_time_iso is None:
+            start_time_iso = datetime.now(ZoneInfo("UTC"))
+        elif start_time_iso.tzinfo is None:
+            # Naive datetime from the frontend: the user picked the date/time
+            # in the trip timezone, so anchor it there before any UTC math.
+            start_time_iso = start_time_iso.replace(tzinfo=tz)
+
         result = simulate_trip(
             current=current_loc,
             pickup=pickup_loc,
             dropoff=dropoff_loc,
             current_cycle_used=data["current_cycle_used_hrs"],
-            start_time_iso=datetime.now(timezone.utc),
+            start_time_iso=start_time_iso,
             external_legs=osrm_legs,
+            trip_timezone=trip_timezone,
         )
 
         if route_geometry:
             for item in result.itinerary:
                 item.coordinates = snap_point_to_polyline(item.coordinates, route_geometry)
 
-        return Response(_serialize_result(result, route_geometry))
+        return Response(_serialize_result(result, route_geometry, trip_timezone))
 
 
 class TripPdfExportView(APIView):
@@ -100,7 +113,7 @@ class TripPdfExportView(APIView):
         return response
 
 
-def _serialize_result(result, route_geometry=None):
+def _serialize_result(result, route_geometry=None, trip_timezone="UTC"):
     if route_geometry is None:
         route_geometry = []
     return {
@@ -119,6 +132,7 @@ def _serialize_result(result, route_geometry=None):
         ],
         "total_distance_miles": result.total_distance_miles,
         "total_duration_hours": result.total_duration_hours,
+        "timezone": trip_timezone,
         "itinerary": [
             {
                 "id": item.id,
@@ -142,6 +156,7 @@ def _serialize_result(result, route_geometry=None):
                 "tractor_number": log.tractor_number,
                 "trailer_number": log.trailer_number,
                 "carrier_name": log.carrier_name,
+                "timezone": log.timezone,
                 "timeline": [
                     {
                         "status": block.status,

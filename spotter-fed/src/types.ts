@@ -34,6 +34,7 @@ export interface TripInputs {
   tractorNumber: string;
   trailerNumber: string;
   startTime: string; // ISO string or format
+  timezone: string;  // IANA timezone name (e.g. "America/Los_Angeles")
 }
 
 export interface ItineraryItem {
@@ -56,6 +57,7 @@ export interface DailyLogSheet {
   tractorNumber: string;
   trailerNumber: string;
   carrierName: string;
+  timezone: string;   // IANA timezone used to partition this day
   
   // Array of status blocks for this 24-hour day (00:00 to 24:00)
   // Each block has a start/end as fraction of hours in the day (0 to 24)
@@ -92,6 +94,7 @@ export interface TripGenerationResult {
   legs: RouteLeg[];
   totalDistanceMiles: number;
   totalDurationHours: number;
+  timezone: string;   // IANA timezone the entire trip is anchored to
   itinerary: ItineraryItem[];
   dailyLogs: DailyLogSheet[];
 }

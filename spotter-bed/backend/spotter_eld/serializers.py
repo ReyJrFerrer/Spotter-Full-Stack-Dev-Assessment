@@ -1,4 +1,33 @@
 from rest_framework import serializers
+from datetime import datetime
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
+
+
+class _NaiveDateTimeField(serializers.Field):
+    """Parses an ISO 8601 datetime string. If the string has no timezone
+    offset (the frontend form's contract: "user picked wall-clock in the
+    trip timezone"), the result is a naive datetime so the view can
+    anchor it in the trip timezone. If the string has an explicit offset
+    (e.g. "...Z" or "...+05:00"), the result is kept aware so the view
+    respects the caller's intent."""
+
+    def to_internal_value(self, value):
+        if value in (None, ""):
+            return None
+        if not isinstance(value, str):
+            raise serializers.ValidationError("Must be an ISO 8601 datetime string")
+        try:
+            dt = datetime.fromisoformat(value)
+        except ValueError as exc:
+            raise serializers.ValidationError(f"Invalid ISO 8601 datetime: {exc}")
+        return dt
+
+    def to_representation(self, value):
+        if value is None:
+            return None
+        if isinstance(value, datetime):
+            return value.isoformat()
+        return str(value)
 
 
 class TripInputSerializer(serializers.Serializer):
@@ -6,6 +35,17 @@ class TripInputSerializer(serializers.Serializer):
     pickup_location = serializers.CharField(required=True, allow_blank=False, trim_whitespace=True)
     dropoff_location = serializers.CharField(required=True, allow_blank=False, trim_whitespace=True)
     current_cycle_used_hrs = serializers.FloatField(required=True, min_value=0.0, max_value=70.0)
+    start_time = _NaiveDateTimeField(required=False, allow_null=True)
+    timezone = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+
+    def validate_timezone(self, value):
+        if not value:
+            return "UTC"
+        try:
+            ZoneInfo(value)
+        except ZoneInfoNotFoundError:
+            raise serializers.ValidationError(f"Unknown IANA timezone: {value}")
+        return value
 
 
 class LocationSerializer(serializers.Serializer):

@@ -25,7 +25,7 @@ Accepts four required inputs:
 3. **Dropoff location**
 4. **Current cycle hours used** (0–70)
 
-Plus optional metadata: carrier name, tractor/trailer numbers, start time, external OSRM route legs.
+Plus optional metadata: carrier name, tractor/trailer numbers, **start time (ISO 8601)**, **trip IANA timezone** (e.g. `America/Los_Angeles`), and external OSRM route legs. When the start time and timezone are omitted, the engine uses the current UTC time and the `UTC` timezone.
 
 ## Geocoding Pipeline
 
@@ -84,9 +84,11 @@ The iterative scheduler for each leg:
 
 Each scheduling event produces an `ItineraryItem` with:
 - Status, activity name, location
-- Start/end times (ISO format)
+- Start/end times (ISO format, always UTC, tzinfo-aware)
 - Duration, distance, coordinates
 - Remarks string
+
+The accompanying `TripGenerationResult` carries a `timezone` field (IANA) that downstream consumers (including `eld_generator.partition_into_daily_logs()`) use to render local-clock displays and to split days at local midnight.
 
 ## Cross-References
 
@@ -94,3 +96,4 @@ Each scheduling event produces an `ItineraryItem` with:
 - [[eld-log-generation|ELD Log Data Generation]] — how the itinerary is partitioned into daily logs
 - [[api-specification|API Specification]] — the endpoint that triggers routing
 - [[backend-django|Django Backend Structure]] — entity page for the backend
+- [[timezone-aware-scheduling|Timezone-Aware Trip Scheduling]] — frontend + backend timezone flow

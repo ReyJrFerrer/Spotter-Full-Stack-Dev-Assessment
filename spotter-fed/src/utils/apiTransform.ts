@@ -79,6 +79,7 @@ function mapDailyLog(log: any): DailyLogSheet {
     tractorNumber: log.tractor_number,
     trailerNumber: log.trailer_number,
     carrierName: log.carrier_name,
+    timezone: log.timezone ?? "UTC",
     timeline: log.timeline.map(mapTimelineBlock),
     totals: {
       OFF: log.totals.OFF,
@@ -101,6 +102,7 @@ export function mapBackendResponse(data: any): TripGenerationResult {
     legs: (data.legs || []).map(mapLeg),
     totalDistanceMiles: data.total_distance_miles,
     totalDurationHours: data.total_duration_hours,
+    timezone: data.timezone ?? "UTC",
     itinerary: (data.itinerary || []).map(mapItineraryItem),
     dailyLogs: (data.daily_logs || []).map(mapDailyLog),
   };

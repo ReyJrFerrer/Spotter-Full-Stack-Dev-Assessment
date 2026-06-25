@@ -1,11 +1,14 @@
 from datetime import datetime, timedelta
 from typing import List, Optional
+from zoneinfo import ZoneInfo
 
 from spotter_eld.utils import (
     round_to_quarter_hour,
     format_time_label,
     format_date_label,
     format_date_string,
+    resolve_timezone,
+    to_local,
 )
 from spotter_eld.types import (
     DutyStatus,
@@ -25,26 +28,25 @@ def partition_into_daily_logs(
     carrier_name: str = "",
     tractor_number: str = "",
     trailer_number: str = "",
+    trip_timezone: str = "UTC",
 ) -> List[DailyLogSheet]:
-    trip_start_ms = start_time.timestamp() * 1000
-    trip_end_ms = end_time.timestamp() * 1000
+    tz = resolve_timezone(trip_timezone)
 
-    current_date_ref = datetime(
-        start_time.year, start_time.month, start_time.day, tzinfo=start_time.tzinfo
-    )
-    end_date_ref = datetime(
-        end_time.year, end_time.month, end_time.day, tzinfo=end_time.tzinfo
-    )
+    if start_time.tzinfo is None:
+        # Naive datetime: interpret in the trip timezone.
+        start_time = start_time.replace(tzinfo=tz)
+    if end_time.tzinfo is None:
+        end_time = end_time.replace(tzinfo=tz)
 
-    list_dates: List[datetime] = []
-    temp_date = current_date_ref
-    while temp_date <= end_date_ref:
-        list_dates.append(temp_date)
-        temp_date += timedelta(days=1)
+    start_local = to_local(start_time, tz)
+    end_local = to_local(end_time, tz)
+
+    day_start = start_local.replace(hour=0, minute=0, second=0, microsecond=0)
 
     daily_logs: List[DailyLogSheet] = []
+    target_date = day_start
 
-    for target_date in list_dates:
+    while target_date <= end_local:
         next_date = target_date + timedelta(days=1)
 
         target_start_ms = target_date.timestamp() * 1000
@@ -58,6 +60,11 @@ def partition_into_daily_logs(
         for item in itinerary:
             item_start = datetime.fromisoformat(item.start_time)
             item_end = datetime.fromisoformat(item.end_time)
+            if item_start.tzinfo is None:
+                item_start = item_start.replace(tzinfo=ZoneInfo("UTC"))
+            if item_end.tzinfo is None:
+                item_end = item_end.replace(tzinfo=ZoneInfo("UTC"))
+
             item_start_ms = item_start.timestamp() * 1000
             item_end_ms = item_end.timestamp() * 1000
 
@@ -106,7 +113,7 @@ def partition_into_daily_logs(
             if item_start_ms >= target_start_ms and item_start_ms < target_end_ms:
                 day_remarks.append(
                     DailyLogRemarks(
-                        time_label=format_time_label(item_start),
+                        time_label=format_time_label(item_start, tz),
                         status=item.status,
                         location=item.location_name,
                         remarks_text=item.remarks or item.activity_name,
@@ -156,8 +163,8 @@ def partition_into_daily_logs(
 
         daily_logs.append(
             DailyLogSheet(
-                date_string=format_date_string(target_date),
-                date_label=format_date_label(target_date),
+                date_string=format_date_string(target_date, tz),
+                date_label=format_date_label(target_date, tz),
                 total_miles_driven=round(miles_driven_today),
                 tractor_number=tractor_number,
                 trailer_number=trailer_number,
@@ -170,7 +177,10 @@ def partition_into_daily_logs(
                     "ON": round_to_quarter_hour(on_sum),
                 },
                 remarks=day_remarks,
+                timezone=trip_timezone,
             )
         )
+
+        target_date = next_date
 
     return daily_logs

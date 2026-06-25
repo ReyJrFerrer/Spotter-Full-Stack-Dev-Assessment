@@ -2,8 +2,9 @@ import math
 from dataclasses import dataclass, field
 from datetime import datetime, timezone, timedelta
 from typing import List, Tuple, Optional
+from zoneinfo import ZoneInfo
 
-from spotter_eld.utils import round_to_quarter_hour, interpolate_coordinates
+from spotter_eld.utils import round_to_quarter_hour, interpolate_coordinates, resolve_timezone, to_local
 from spotter_eld.types import (
     DutyStatus,
     GeocodedLocation,
@@ -70,9 +71,15 @@ def simulate_trip(
     tractor_number: str = "",
     trailer_number: str = "",
     external_legs: Optional[List[RouteLeg]] = None,
+    trip_timezone: str = "UTC",
 ) -> TripGenerationResult:
+    tz = resolve_timezone(trip_timezone)
     if start_time_iso is None:
-        start_time_iso = datetime.now(timezone.utc)
+        start_time_iso = datetime.now(ZoneInfo("UTC"))
+    elif start_time_iso.tzinfo is None:
+        # Naive datetime from the frontend: interpret in the trip timezone
+        # (the timezone the user actually picked the time in).
+        start_time_iso = start_time_iso.replace(tzinfo=tz)
     current_time = start_time_iso
 
     if external_legs and len(external_legs) == 2:
@@ -382,6 +389,7 @@ def simulate_trip(
         carrier_name=carrier_name,
         tractor_number=tractor_number,
         trailer_number=trailer_number,
+        trip_timezone=trip_timezone,
     )
 
     return TripGenerationResult(
@@ -393,4 +401,5 @@ def simulate_trip(
         total_duration_hours=round_to_quarter_hour(total_duration_hours),
         itinerary=itinerary,
         daily_logs=daily_logs,
+        timezone=trip_timezone,
     )

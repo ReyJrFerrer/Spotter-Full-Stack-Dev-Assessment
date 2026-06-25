@@ -5,12 +5,13 @@
 
 import React from 'react';
 import { ItineraryItem, DutyStatus } from '../types';
-import { Clock, Navigation, Compass, Calendar, Coffee, Moon, Fuel, ClipboardCheck, ArrowRight } from 'lucide-react';
+import { Clock, Navigation, Compass, Calendar, Coffee, Moon, Fuel, ClipboardCheck, ArrowRight, Globe2 } from 'lucide-react';
 
 interface Props {
   itinerary: ItineraryItem[];
   totalDistance: number;
   totalDurationHours: number;
+  tripTimezone: string;
 }
 
 const getStatusBadge = (status: DutyStatus) => {
@@ -46,7 +47,7 @@ const getEventIcon = (status: DutyStatus, name: string) => {
   return <Compass className="h-4 w-4 text-[#FD5368]" />;
 };
 
-export default function ItineraryPanel({ itinerary, totalDistance, totalDurationHours }: Props) {
+export default function ItineraryPanel({ itinerary, totalDistance, totalDurationHours, tripTimezone }: Props) {
   return (
     <div id="itinerary-timeline-dashboard" className="bg-white border-2 border-[#1A1A1A] p-6 shadow-[6px_6px_0px_#133658] flex flex-col h-full">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b-2 border-[#1A1A1A] pb-4 mb-4">
@@ -55,7 +56,10 @@ export default function ItineraryPanel({ itinerary, totalDistance, totalDuration
             <Clock className="h-5 w-5 text-[#FD5368]" />
             3. Chronological Dispatch Itinerary
           </h2>
-          <p className="text-[10px] uppercase font-bold text-[#1A1A1A]/60 mt-1">Calculated timeline for commercial driving log</p>
+          <p className="text-[10px] uppercase font-bold text-[#1A1A1A]/60 mt-1 flex items-center gap-1">
+            <Globe2 className="h-3 w-3" />
+            All times anchored to {tripTimezone}
+          </p>
         </div>
         
         {/* Rapid stats banner */}
@@ -81,9 +85,19 @@ export default function ItineraryPanel({ itinerary, totalDistance, totalDuration
             {itinerary.map((item, index) => {
               const startD = new Date(item.startTime);
               const endD = new Date(item.endTime);
-              const options: Intl.DateTimeFormatOptions = { hour: '2-digit', minute: '2-digit' };
-              const timeRangeStr = `${startD.toLocaleTimeString([], options)} - ${endD.toLocaleTimeString([], options)}`;
-              const dayStr = startD.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
+              const timeOptions: Intl.DateTimeFormatOptions = {
+                hour: '2-digit',
+                minute: '2-digit',
+                timeZone: tripTimezone,
+              };
+              const dateOptions: Intl.DateTimeFormatOptions = {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+                timeZone: tripTimezone,
+              };
+              const timeRangeStr = `${startD.toLocaleTimeString([], timeOptions)} - ${endD.toLocaleTimeString([], timeOptions)}`;
+              const dayStr = startD.toLocaleDateString([], dateOptions);
 
               return (
                 <div key={item.id} id={`itinerary-item-${index}`} className="relative group">

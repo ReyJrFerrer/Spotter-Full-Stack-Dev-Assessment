@@ -3,9 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { TripInputs } from '../types';
-import { MapPin, Truck, Compass, Calendar, Clock, RotateCcw } from 'lucide-react';
+import { MapPin, Truck, Compass, Calendar, Clock, RotateCcw, Globe2 } from 'lucide-react';
 import LocationAutocomplete from './LocationAutocomplete';
 import { US_CITIES } from '../constants/usCities';
 
@@ -22,7 +22,58 @@ const PRESET_TRIPS = [
 
 const AUTOCOMPLETE_URL = `${(import.meta.env.VITE_API_URL || '').replace(/\/+$/, '')}/api/locations/autocomplete/`;
 
+const TIMEZONE_OPTIONS = [
+  { value: "UTC", label: "UTC (Dispatch Default)" },
+];
+
+function defaultLocalStart(): string {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${dd}T06:00`;
+}
+
+function todayInTimezone(timezone: string): string {
+  try {
+    const parts = new Intl.DateTimeFormat('en-CA', {
+      timeZone: timezone,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    }).formatToParts(new Date());
+    const get = (type: string) =>
+      parts.find((p) => p.type === type)?.value ?? '00';
+    return `${get('year')}-${get('month')}-${get('day')}`;
+  } catch {
+    return defaultLocalStart().split('T')[0];
+  }
+}
+
+function browserTimezone(): string {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+  } catch {
+    return "UTC";
+  }
+}
+
+function browserTimezoneOffsetLabel(): string {
+  const offset = -new Date().getTimezoneOffset();
+  const sign = offset >= 0 ? "+" : "-";
+  const abs = Math.abs(offset);
+  const hh = String(Math.floor(abs / 60)).padStart(2, "0");
+  const mm = String(abs % 60).padStart(2, "0");
+  return `UTC${sign}${hh}:${mm}`;
+}
+
 export default function TripDetailsForm({ onSubmit, isLoading }: Props) {
+  const detectedTz = browserTimezone();
+  const detectedInList = TIMEZONE_OPTIONS.some((opt) => opt.value === detectedTz);
+  const timezoneOptions = detectedInList
+    ? TIMEZONE_OPTIONS
+    : [...TIMEZONE_OPTIONS, { value: detectedTz, label: `Browser: ${detectedTz}` }];
+
   const [currentLocation, setCurrentLocation] = useState('Los Angeles, CA');
   const [pickupLocation, setPickupLocation] = useState('Las Vegas, NV');
   const [dropoffLocation, setDropoffLocation] = useState('Salt Lake City, UT');
@@ -30,14 +81,13 @@ export default function TripDetailsForm({ onSubmit, isLoading }: Props) {
   const [carrierName, setCarrierName] = useState('Swift Logistical Transit Group');
   const [tractorNumber, setTractorNumber] = useState('TRK-9801C');
   const [trailerNumber, setTrailerNumber] = useState('TRL-552A');
-  const [startTime, setStartTime] = useState(() => {
-    const d = new Date();
-    // format as yyyy-MM-ddTHH:mm
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, '0');
-    const dd = String(d.getDate()).padStart(2, '0');
-    return `${y}-${m}-${dd}T08:00`;
-  });
+  const [timezone, setTimezone] = useState<string>(detectedTz);
+  const [startDate, setStartDate] = useState<string>(() => todayInTimezone(detectedTz));
+  const [startTimeOfDay, setStartTimeOfDay] = useState<string>('06:00');
+
+  useEffect(() => {
+    setStartDate((prev) => todayInTimezone(timezone));
+  }, [timezone]);
 
   const handlePreset = (preset: typeof PRESET_TRIPS[0]) => {
     setCurrentLocation(preset.curr);
@@ -45,8 +95,14 @@ export default function TripDetailsForm({ onSubmit, isLoading }: Props) {
     setDropoffLocation(preset.drop);
   };
 
+  const handleResetSchedule = () => {
+    setStartDate(todayInTimezone(timezone));
+    setStartTimeOfDay('06:00');
+  };
+
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const naiveIso = `${startDate}T${startTimeOfDay}:00`;
     onSubmit({
       currentLocation,
       pickupLocation,
@@ -55,7 +111,8 @@ export default function TripDetailsForm({ onSubmit, isLoading }: Props) {
       carrierName,
       tractorNumber,
       trailerNumber,
-      startTime: new Date(startTime).toISOString()
+      startTime: naiveIso,
+      timezone,
     });
   };
 
@@ -187,18 +244,95 @@ export default function TripDetailsForm({ onSubmit, isLoading }: Props) {
           </div>
         </div>
 
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-t-2 border-[#1A1A1A] pt-5">
-          <div className="flex items-center gap-2">
-            <Calendar className="h-4 w-4 text-[#FD5368]" />
-            <input
-              id="input-start-date"
-              type="datetime-local"
-              required
-              value={startTime}
-              onChange={(e) => setStartTime(e.target.value)}
-              className="text-xs font-bold text-[#1A1A1A] bg-[#E8E4DF] border border-[#1A1A1A] rounded-none px-3 py-2 outline-none font-mono"
-            />
+        {/* Schedule / Timezone block */}
+        <div className="border-t-2 border-[#1A1A1A] pt-5">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-[10px] font-extrabold text-[#1A1A1A] uppercase tracking-widest flex items-center gap-2">
+              <Calendar className="h-4 w-4 text-[#FD5368]" />
+              Dispatch Schedule
+            </h3>
+            <button
+              type="button"
+              id="btn-reset-schedule"
+              onClick={handleResetSchedule}
+              className="text-[10px] font-bold text-[#1A1A1A]/70 hover:text-[#FD5368] uppercase tracking-wider flex items-center gap-1 transition-colors"
+              title="Reset to today at 06:00 local"
+            >
+              <RotateCcw className="h-3 w-3" />
+              Reset
+            </button>
           </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label htmlFor="input-start-date" className="text-[10px] font-bold text-[#1A1A1A] uppercase tracking-widest block mb-1">
+                Departure Date
+              </label>
+              <div className="relative">
+                <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Calendar className="h-4 w-4 text-[#FD5368]" />
+                </span>
+                <input
+                  id="input-start-date"
+                  type="date"
+                  required
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  className="w-full pl-10 pr-3 py-2.5 text-sm bg-[#F4F1ED]/40 hover:bg-[#F4F1ED]/65 focus:bg-white border border-[#1A1A1A] text-[#1A1A1A] font-mono rounded-none outline-none transition-all focus:ring-1 focus:ring-[#1A1A1A]"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label htmlFor="input-start-time" className="text-[10px] font-bold text-[#1A1A1A] uppercase tracking-widest block mb-1">
+                Departure Time
+              </label>
+              <div className="relative">
+                <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Clock className="h-4 w-4 text-[#FD5368]" />
+                </span>
+                <input
+                  id="input-start-time"
+                  type="time"
+                  required
+                  step={900}
+                  value={startTimeOfDay}
+                  onChange={(e) => setStartTimeOfDay(e.target.value)}
+                  className="w-full pl-10 pr-3 py-2.5 text-sm bg-[#F4F1ED]/40 hover:bg-[#F4F1ED]/65 focus:bg-white border border-[#1A1A1A] text-[#1A1A1A] font-mono rounded-none outline-none transition-all focus:ring-1 focus:ring-[#1A1A1A]"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label htmlFor="input-timezone" className="text-[10px] font-bold text-[#1A1A1A] uppercase tracking-widest block mb-1">
+                Timezone
+              </label>
+              <div className="relative">
+                <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Globe2 className="h-4 w-4 text-[#FD5368]" />
+                </span>
+                <select
+                  id="input-timezone"
+                  value={timezone}
+                  onChange={(e) => setTimezone(e.target.value)}
+                  className="w-full pl-10 pr-3 py-2.5 text-sm bg-[#F4F1ED]/40 hover:bg-[#F4F1ED]/65 focus:bg-white border border-[#1A1A1A] text-[#1A1A1A] font-mono rounded-none outline-none transition-all focus:ring-1 focus:ring-[#1A1A1A] appearance-none"
+                >
+                  {timezoneOptions.map((opt) => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
+              </div>
+              <p className="text-[10px] text-[#1A1A1A]/60 font-medium mt-1">
+                Browser detected: {detectedTz} ({browserTimezoneOffsetLabel()})
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-t-2 border-[#1A1A1A] pt-5">
+          <p className="text-[11px] text-[#1A1A1A]/70 leading-relaxed">
+            All timeline coordinates (itinerary + ELD grids) will be anchored to the selected timezone. Midnight boundaries follow the chosen timezone, ensuring the driver&apos;s log dates match their local clock.
+          </p>
 
           <button
             id="btn-dispatch-route"

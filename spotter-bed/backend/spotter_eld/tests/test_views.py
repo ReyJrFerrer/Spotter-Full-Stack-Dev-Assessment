@@ -135,6 +135,103 @@ class TripGenerateEndpointTests(TestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
+    def test_generate_trip_accepts_start_time_and_timezone(self):
+        """The endpoint should accept optional start_time and timezone fields
+        and pass them through to the engine."""
+        payload = {
+            **self.valid_payload,
+            "start_time": "2026-06-22T08:00:00Z",
+            "timezone": "America/Los_Angeles",
+        }
+        response = self.client.post(
+            "/api/trips/generate/", payload, format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+        self.assertEqual(data["timezone"], "America/Los_Angeles")
+        for log in data["daily_logs"]:
+            self.assertEqual(log["timezone"], "America/Los_Angeles")
+
+    def test_generate_trip_defaults_timezone_to_utc(self):
+        """When no timezone is provided, the response should default to UTC."""
+        response = self.client.post(
+            "/api/trips/generate/", self.valid_payload, format="json"
+        )
+        data = response.json()
+        self.assertEqual(data["timezone"], "UTC")
+        for log in data["daily_logs"]:
+            self.assertEqual(log["timezone"], "UTC")
+
+    def test_generate_trip_rejects_invalid_timezone(self):
+        """An unknown IANA timezone should return 400."""
+        payload = {
+            **self.valid_payload,
+            "timezone": "Mars/Olympus_Mons",
+        }
+        response = self.client.post(
+            "/api/trips/generate/", payload, format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_generate_trip_interprets_naive_start_time_in_trip_timezone(self):
+        """A naive ISO start_time (no Z, no offset) is anchored to the
+        trip timezone, not UTC. This is the contract the form uses."""
+        # 06:00 in America/Los_Angeles on 2026-06-22 should NOT become
+        # yesterday at 10 PM UTC; it should stay on 2026-06-22 at 6 AM Pacific.
+        payload = {
+            **self.valid_payload,
+            "start_time": "2026-06-22T06:00:00",
+            "timezone": "America/Los_Angeles",
+        }
+        response = self.client.post(
+            "/api/trips/generate/", payload, format="json"
+        )
+        data = response.json()
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(data["timezone"], "America/Los_Angeles")
+        # The first log must be the trip-local date, not yesterday's UTC date.
+        self.assertEqual(data["daily_logs"][0]["date_string"], "2026-06-22")
+        # The first remark must show 6:00 AM Pacific, not 1:00 PM UTC.
+        first_log = data["daily_logs"][0]
+        self.assertEqual(first_log["remarks"][0]["time_label"], "6:00 AM")
+
+    def test_generate_trip_naive_start_time_in_singapore_keeps_date(self):
+        """Regression test for the user-reported bug: a naive 06:00 in
+        Asia/Singapore (UTC+8) must NOT roll back to yesterday at 10 PM.
+        It should stay on the selected local date."""
+        payload = {
+            **self.valid_payload,
+            "start_time": "2026-06-22T06:00:00",
+            "timezone": "Asia/Singapore",
+        }
+        response = self.client.post(
+            "/api/trips/generate/", payload, format="json"
+        )
+        data = response.json()
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(data["timezone"], "Asia/Singapore")
+        self.assertGreaterEqual(len(data["daily_logs"]), 1)
+        # The first log should be on 2026-06-22 (Singapore local),
+        # NOT 2026-06-21 (which would be the UTC date).
+        self.assertEqual(data["daily_logs"][0]["date_string"], "2026-06-22")
+
+    def test_generate_trip_explicit_utc_iso_still_works(self):
+        """Backwards compatibility: an explicit UTC ISO string (with Z)
+        is still respected and not re-projected into the trip timezone."""
+        payload = {
+            **self.valid_payload,
+            "start_time": "2026-06-22T06:00:00Z",
+            "timezone": "America/Los_Angeles",
+        }
+        response = self.client.post(
+            "/api/trips/generate/", payload, format="json"
+        )
+        data = response.json()
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        # 06:00 UTC on 2026-06-22 = 23:00 Pacific on 2026-06-21
+        self.assertEqual(data["daily_logs"][0]["date_string"], "2026-06-21")
+        self.assertIn("11:00 PM", data["daily_logs"][0]["remarks"][0]["time_label"])
+
     def test_generate_trip_daily_log_has_24h_total(self):
         response = self.client.post(
             "/api/trips/generate/", self.valid_payload, format="json"

@@ -43,11 +43,13 @@ Returns up to 10 US city suggestions from Nominatim search (filtered to `country
   "current_location": "Los Angeles, CA",
   "pickup_location": "Las Vegas, NV",
   "dropoff_location": "Salt Lake City, UT",
-  "current_cycle_used_hrs": 15.5
+  "current_cycle_used_hrs": 15.5,
+  "start_time": "2026-06-22T06:00:00-07:00",
+  "timezone": "America/Los_Angeles"
 }
 ```
 
-All 4 fields are required. `current_cycle_used_hrs` must be a float between 0.0 and 70.0 (inclusive).
+The 4 top fields are required. `current_cycle_used_hrs` must be a float between 0.0 and 70.0 (inclusive). `start_time` is an optional ISO 8601 datetime (timezone-aware or `Z`); when omitted the engine uses the current UTC time. `timezone` is an optional IANA name (e.g. `America/Los_Angeles`, `America/New_York`, `UTC`); when omitted or invalid, the response is generated in UTC and the bad value returns 400.
 
 **Response:**
 ```json
@@ -66,6 +68,7 @@ All 4 fields are required. `current_cycle_used_hrs` must be a float between 0.0 
   ],
   "total_distance_miles": 690,
   "total_duration_hours": 11.75,
+  "timezone": "America/Los_Angeles",
   "itinerary": [
     {
       "id": "item-1",
@@ -88,19 +91,22 @@ All 4 fields are required. `current_cycle_used_hrs` must be a float between 0.0 
       "tractor_number": "",
       "trailer_number": "",
       "carrier_name": "",
+      "timezone": "America/Los_Angeles",
       "timeline": [
-        { "status": "OFF", "start_hour": 0.0, "end_hour": 8.0, "location_name": "...", "remarks": "Off Duty" },
-        { "status": "ON", "start_hour": 8.0, "end_hour": 8.25, "location_name": "...", "remarks": "..." },
-        { "status": "D", "start_hour": 8.25, "end_hour": 10.25, "location_name": "...", "remarks": "..." }
+        { "status": "OFF", "start_hour": 0.0, "end_hour": 6.0, "location_name": "...", "remarks": "Off Duty" },
+        { "status": "ON", "start_hour": 6.0, "end_hour": 6.25, "location_name": "...", "remarks": "..." },
+        { "status": "D", "start_hour": 6.25, "end_hour": 8.25, "location_name": "...", "remarks": "..." }
       ],
       "totals": { "OFF": 10.5, "SB": 0.0, "D": 10.0, "ON": 3.5 },
       "remarks": [
-        { "time_label": "8:00 AM", "status": "ON", "location": "Los Angeles, CA", "remarks_text": "..." }
+        { "time_label": "6:00 AM", "status": "ON", "location": "Los Angeles, CA", "remarks_text": "..." }
       ]
     }
   ]
 }
 ```
+
+Itinerary `start_time` / `end_time` are always returned in UTC (tz-aware). Daily-log date labels, time labels, and timeline coordinates are rendered in the trip's local timezone, which is echoed on the top-level `timezone` field and on each `daily_logs[i].timezone`.
 
 ## Frontend Integration
 
@@ -113,10 +119,12 @@ The frontend (`spotter-fed/`) calls this endpoint directly via Vite proxy. The `
 | `GeocodedLocation` | label, city, state, lat, lng | `types.py` |
 | `RouteLeg` | from_location, to_location, distance_miles, duration_hours | `types.py` |
 | `ItineraryItem` | id, status, activity_name, location_name, start_time, end_time, duration_hours, distance_miles, coordinates, remarks | `types.py` |
-| `DailyLogSheet` | date_string, date_label, total_miles_driven, tractor_number, trailer_number, carrier_name, timeline[], totals{}, remarks[] | `types.py` |
+| `DailyLogSheet` | date_string, date_label, total_miles_driven, tractor_number, trailer_number, carrier_name, timezone, timeline[], totals{}, remarks[] | `types.py` |
+| `TripGenerationResult` | current, pickup, dropoff, legs, total_distance_miles, total_duration_hours, timezone, itinerary, daily_logs | `types.py` |
 
 ## Cross-References
 
 - [[trip-routing-engine|Trip Routing Engine]] — the algorithm called by the API
 - [[backend-django|Django Backend Structure]] — backend implementation details
 - [[project-architecture|Project Architecture]] — how the API fits in the system
+- [[timezone-aware-scheduling|Timezone-Aware Trip Scheduling]] — request/response timezone contract

@@ -26,9 +26,10 @@ sources:
 
 ### TripDetailsForm (`src/components/TripDetailsForm.tsx`)
 - Input form with 3 location autocompletes (current, pickup, dropoff) backed by Nominatim API, plus cycle hours
-- Plus optional: carrier name, tractor#, trailer#, start time
+- Plus optional: carrier name, tractor#, trailer#
+- **Dispatch Schedule block:** separate date picker, time picker (15-min steps), and IANA timezone `<select>` (Pacific/Mountain/Central/Eastern/Alaska/Hawaii/UTC). Auto-detects browser timezone via `Intl.DateTimeFormat()` and shows UTC offset. Default start = today at 06:00 local.
 - 3 preset route buttons (LA→Vegas, Midwest, East Coast)
-- Handles form submission via `onSubmit` callback
+- Handles form submission via `onSubmit` callback, sending `start_time` + `timezone` to the backend
 
 ### CalculatedMap (`src/components/CalculatedMap.tsx`)
 - Leaflet interactive map with CartoDB light tiles
@@ -48,6 +49,7 @@ sources:
 ### ItineraryPanel (`src/components/ItineraryPanel.tsx`)
 - Chronological timeline display with vertical timeline
 - Each item shows: activity name, status badge, date/time range, location, distance, duration, remarks
+- **Trip-timezone aware:** accepts a `tripTimezone` prop and renders every date/time using `Intl.DateTimeFormat({ timeZone: tripTimezone })`. Header shows a globe icon + IANA name so the user can verify the anchor clock.
 - Color-coded status badges and activity icons
 
 ### EldLogSheets (`src/components/EldLogSheets.tsx`)
@@ -57,6 +59,7 @@ sources:
 - Solid line segments with vertical transitions
 - Right-side totals column
 - Remarks table with status badges
+- **Trip-timezone aware:** shows the active log's IANA timezone in the metadata strip; backend-supplied `time_label` values are already in the trip local time so the grid and itinerary agree.
 - Mock DOT portal submission button
 
 ## API Transform Layer (`src/utils/apiTransform.ts`)
@@ -79,3 +82,4 @@ sources:
 - [[trip-routing-engine|Trip Routing Engine]] — the HOS simulation logic (now Python back end)
 - [[api-specification|API Specification]] — the API endpoint consumed
 - [[design-system|Design System Reference]] — UI/UX design system, colors, typography, theming
+- [[timezone-aware-scheduling|Timezone-Aware Trip Scheduling]] — calendar/timezone UI flow

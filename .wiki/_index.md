@@ -6,7 +6,7 @@
 
 - **Root**: `.wiki/`
 - **Created**: 2026-06-22
-- **Last updated**: 2026-06-23
+- **Last updated**: 2026-06-25
 - **Last lint**: 2026-06-23
 
 ## Index
@@ -16,8 +16,8 @@
 | Page | Summary |
 |---|---|
 | [[hours-of-service\|FMCSA HOS Rules]] ([concepts/hours-of-service](wiki/concepts/hours-of-service.md)) | FMCSA Hours of Service regulations — 11/14/70-hour limits, 30-min break, 8/2 sleeper berth split, fueling requirements |
-| [[eld-log-generation\|ELD Log Data Generation]] ([concepts/eld-log-generation](wiki/concepts/eld-log-generation.md)) | Python implementation of trip timeline partitioning into 24-hour daily log sheets with 15-min grid coordinates |
-| [[trip-routing-engine\|Trip Routing Engine]] ([concepts/trip-routing-engine](wiki/concepts/trip-routing-engine.md)) | Python iterative HOS scheduler — geocoding pipeline, route legs, constraint enforcement loop |
+| [[eld-log-generation\|ELD Log Data Generation]] ([concepts/eld-log-generation](wiki/concepts/eld-log-generation.md)) | Python implementation of trip timeline partitioning into 24-hour daily log sheets (local midnight in trip timezone) with 15-min grid coordinates |
+| [[trip-routing-engine\|Trip Routing Engine]] ([concepts/trip-routing-engine](wiki/concepts/trip-routing-engine.md)) | Python iterative HOS scheduler — geocoding pipeline, route legs, constraint enforcement loop, timezone-aware scheduling |
 | [[eld-log-grid\|ELD Log Grid]] ([concepts/eld-log-grid](wiki/concepts/eld-log-grid.md)) | Standardized 24-hour SVG grid for duty status visualization |
 
 ### Entities
@@ -53,11 +53,12 @@
 | [[deployment-progress-update\|Deployment Progress Update]] ([raw/notes/deployment-progress-update](../raw/notes/deployment-progress-update.md)) | Note | Vercel deployment configuration — 7 commits, WSGI module fix, env-driven config, stateless DB, CORS port change |
 | [[map-us-bounds-restriction\|Map US Bounds Restriction]] ([raw/notes/map-us-bounds-restriction](../raw/notes/map-us-bounds-restriction.md)) | Note | Leaflet map restricted to continental US with maxBounds, minZoom, and viscosity |
 | [[nominatim-autocomplete-api\|Nominatim Autocomplete API]] ([raw/notes/nominatim-autocomplete-api](../raw/notes/nominatim-autocomplete-api.md)) | Note | Backend endpoint + frontend component for Nominatim-powered US city autocomplete |
+| [[timezone-aware-scheduling\|Timezone-Aware Trip Scheduling]] ([raw/notes/timezone-aware-scheduling](../raw/notes/timezone-aware-scheduling.md)) | Note | Frontend calendar/timezone picker + backend IANA timezone support for consistent itinerary and ELD log display |
 
 ## Stats
 
 | Area | Count |
 |---|---|
-| Raw sources | 14 |
+| Raw sources | 15 |
 | Wiki articles | 9 |
 | Uncompiled | 0 |

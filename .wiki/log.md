@@ -65,3 +65,14 @@
 - Updated LocationAutocomplete to show `staticOptions` scrollable list when input is empty + focused
 - When user types 2+ chars, switches to API-driven Nominatim results
 - Updated frontend-components wiki article
+
+## [2026-06-25] fix | Timezone-aware trip scheduling (Itinerary vs ELD log mismatch)
+- Created raw note: timezone-aware-scheduling documenting root cause and full-stack fix
+- Backend: `TripInputSerializer` accepts optional `start_time` + `timezone` (IANA); `views.py` propagates; `eld_generator.partition_into_daily_logs()` walks day boundaries at **local midnight in trip timezone**; `utils.py` adds `resolve_timezone()` + `to_local()` and timezone-aware formatters
+- Types: `TripGenerationResult` and `DailyLogSheet` gain `timezone` field (defaults to `"UTC"`)
+- Frontend: `TripDetailsForm` now has separate date/time/timezone inputs with auto-detected browser TZ and 06:00 local default; `ItineraryPanel` and `EldLogSheets` use the trip's IANA timezone for display
+- Added 11 new tests (8 timezone partitioning + 3 view); 142/143 backend tests pass (1 pre-existing CORS failure)
+- Frontend `npm run lint` and `npm run build` succeed
+- Updated wiki pages: eld-log-generation, trip-routing-engine, api-specification, frontend-components
+- Updated _index.md and log.md
+
