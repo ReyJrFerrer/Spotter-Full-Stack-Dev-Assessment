@@ -113,10 +113,10 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F4F1ED] flex flex-col text-[#1A1A1A]">
+    <div className="min-h-screen bg-[#96edda] flex flex-col text-[#1A1A1A]">
       
       {/* 1. Header Navigation Banner: Editorial Layout */}
-      <header className="bg-[#BDE0DF] text-[#1A1A1A] border-b-2 border-[#1A1A1A] sticky top-0 z-50 py-5">
+      <header className="bg-[#c5f6ff] text-[#1A1A1A] border-b-2 border-[#1A1A1A] sticky top-0 z-50 py-5">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row md:items-baseline md:justify-between gap-4">
           <div>
             <h1 className="text-4xl md:text-4xl font-serif italic font-black  text-[#FD5368] tracking-tighter">
